@@ -1,8 +1,9 @@
 import { GLConstants } from "./glconstant";
-import { IArrayInfo, ArrayInfoType } from "./type/type";
+import { IArrayInfo, ArrayInfoType, IVertexAttrib } from "./type/type";
+import { getGLTypeForTypedArray } from "./helper";
 
 //vertexAttribPointer(value.location, value.componentSize, value.componentDataType, value.normalize, value.strideInBytes, value.offsetInBytes);
-export class VertexAttrib
+export class VertexAttrib implements IVertexAttrib
 {
     name: string;
     value: ArrayBufferView;
@@ -34,6 +35,10 @@ export class VertexAttrib
                     {
                         let type = data.type;
                         this.value = new type(datavalue);
+
+                    } else
+                    {
+                        this.value = new Float32Array(datavalue);
                     }
                 }
                 else if (datavalue instanceof ArrayBuffer)
@@ -43,11 +48,11 @@ export class VertexAttrib
             }
             this.buffer = data.buffer;
             this.componentSize = data.componentSize | guessNumComponentsFromName(name);
-            // this.componentDataType = data.componentDataType | GLConstants.FLOAT;
             this.normalize = data.normalize ? data.normalize : false;
             this.strideInBytes = data.strideInBytes | 0;
             this.offsetInBytes = data.offsetInBytes | 0;
             this.drawType = data.drawType | GLConstants.STATIC_DRAW;
+
         } else
         {
             if (data instanceof Array)
@@ -57,8 +62,10 @@ export class VertexAttrib
             {
                 this.value = data as ArrayBufferView;
             }
-            this.componentDataType = getGLTypeForTypedArray(this.value);
+            // this.componentDataType = getGLTypeForTypedArray(this.value);
         }
+
+        this.componentDataType = getGLTypeForTypedArray(this.value);
 
         if (this.buffer == null)
         {
@@ -69,21 +76,7 @@ export class VertexAttrib
     }
 }
 
-/**
- * Get the GL type for a typedArray
- */
-function getGLTypeForTypedArray(typedArray): number
-{
-    if (typedArray instanceof Int8Array) { return GLConstants.BYTE; }
-    if (typedArray instanceof Uint8Array) { return GLConstants.UNSIGNED_BYTE; }
-    if (typedArray instanceof Uint8ClampedArray) { return GLConstants.UNSIGNED_BYTE; }
-    if (typedArray instanceof Int16Array) { return GLConstants.SHORT; }
-    if (typedArray instanceof Uint16Array) { return GLConstants.UNSIGNED_SHORT; }
-    if (typedArray instanceof Int32Array) { return GLConstants.INT; }
-    if (typedArray instanceof Uint32Array) { return GLConstants.UNSIGNED_INT; }
-    if (typedArray instanceof Float32Array) { return GLConstants.FLOAT; }
-    throw "unsupported typed array type";
-}
+
 
 
 const uvRE = /uv/;

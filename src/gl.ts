@@ -1,7 +1,7 @@
-import { VertexAttrib } from "./attribute";
+import { VertexAttrib } from "./VertexAttrib";
 import { ArrayInfoType } from "./type/type";
-import { MeshInfo } from "./meshInfo";
-import { VertexIndex } from "./index";
+import { GeometryInfo } from "./GeometryInfo";
+import { VertexIndex } from "./VertexIndex";
 
 type contextAtts = { premultipliedAlpha?: boolean, alpha?: boolean, stencil?: boolean };
 type glRobotOps = { context?: string, contextAtts?: contextAtts, extentions?: string[] };
@@ -58,11 +58,10 @@ export function initContext(canvas: HTMLCanvasElement, options: glRobotOps = {})
     return gl;
 
 }
-type attribsOps = { position?: ArrayInfoType, uv?: ArrayInfoType, color?: ArrayInfoType };
-export function creatBufferInfoFromArray(gl: WebGLRenderingContext, arrs: { [keyName: string]: ArrayInfoType })
+
+export function creatGeometryInfoFromArray(gl: WebGLRenderingContext, arrs: { [keyName: string]: ArrayInfoType })
 {
-    let meshinfo = new MeshInfo();
-    meshinfo.atts = {};
+    let meshinfo = new GeometryInfo();
 
     Object.keys(arrs).forEach((attName) =>
     {
@@ -77,15 +76,4 @@ export function creatBufferInfoFromArray(gl: WebGLRenderingContext, arrs: { [key
     })
 }
 
-export function createAttribsFromArrays(gl: WebGLRenderingContext, arrs: { [attName: string]: ArrayInfoType })
-{
-    let atts: { [key: string]: VertexAttrib } = {};
-    Object.keys(arrs).forEach((attName) =>
-    {
-        if (attName != "indices")
-        {
-            let attInfo = arrs[attName];
-            atts[attName] = new VertexAttrib(gl, attName, attInfo);
-        }
-    })
-}
+
