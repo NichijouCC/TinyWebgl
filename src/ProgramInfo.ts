@@ -1,4 +1,4 @@
-import { GLConstants } from "./glconstant";
+import { GLConstants } from "./GLConstant";
 import { IProgramInfo, IVertexAttrib, IAttributeInfo, IUniformInfo } from "./type/type";
 
 export enum ShaderTypeEnum

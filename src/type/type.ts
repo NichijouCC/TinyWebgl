@@ -1,29 +1,46 @@
 export type TypedArrType = Float64ArrayConstructor | Float32ArrayConstructor | Int32ArrayConstructor | Int16ArrayConstructor | Int8ArrayConstructor | Uint32ArrayConstructor | Uint16ArrayConstructor | Uint8ArrayConstructor;
 
-export type ArrayInfoType = number[] | ArrayBufferView | IArrayInfo;
+export type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
 
+export type ArrayInfoType = number | number[] | ArrayBufferView | IArrayInfo;
+
+export interface IcontextAtt
+{
+    premultipliedAlpha?: boolean;
+    alpha?: boolean;
+    stencil?: boolean
+}
+
+export interface IcontextOptions
+{
+    context?: string;
+    contextAtts?: IcontextAtt;
+    extentions?: string[];
+}
 
 export interface IArrayInfo
 {
     buffer?: WebGLBuffer;
 
-    value?: number[] | ArrayBufferView;
-    type?: TypedArrType;
+    value: number | number[] | ArrayBufferView;
     componentSize?: number;
     // size?: number;
-    componentDataType?: number;
+    componentDataType?: number;//gl.float
     normalize?: boolean;
     offsetInBytes?: number;
     strideInBytes?: number;
     divisor?: number;
     drawType?: number;
+
+    indexCount?: number;
+    indexOffset?: number;
 }
 
 
 export interface IVertexAttrib
 {
     name: string;
-    value: ArrayBufferView;
+    value: TypedArray;
 
     buffer: WebGLBuffer;
     drawType: number;
@@ -37,15 +54,28 @@ export interface IVertexAttrib
     divisor?: number;
 }
 
+export class IDrawInfo
+{
+    count?: number;
+    offset?: number;
+}
+
 export interface IVertexIndex
 {
-    value: Uint16Array;
+    value: TypedArray;
+    componentDataType: number;
 
     buffer: WebGLBuffer;
     drawType: number;
+}
 
-    count: number;
-    offset: number;
+
+export interface IGeometry
+{
+    atts: { [attName: string]: IVertexAttrib };
+    indices: IVertexIndex;
+    count?: number;
+    offset?: number;
 }
 
 

@@ -1,62 +1,57 @@
-import { ArrayInfoType, IArrayInfo, IVertexIndex } from "./type/type";
-import { GLConstants } from "./glconstant";
-import { getGLTypeForTypedArray } from "./helper";
+import { IVertexIndex, TypedArray, ArrayInfoType, IArrayInfo } from "./type/type";
+import { GLConstants } from "./GLConstant";
+import { getTypedArray } from "./Helper";
 
 export class VertexIndex implements IVertexIndex
 {
-    value: Uint16Array;
+    value: TypedArray;
+    componentDataType: number;
 
     buffer: WebGLBuffer;
-    drawType: number = GLConstants.STATIC_DRAW;
+    drawType: number;
 
-    componentDataType: number = GLConstants.UNSIGNED_SHORT;
     count: number;
-    offset: number = 0;
-
-    constructor(gl: WebGLRenderingContext, data: ArrayInfoType)
+    offset: number;
+}
+export function createIndexBufferInfo(gl: WebGLRenderingContext, data: ArrayInfoType): VertexIndex
+{
+    let info = new VertexIndex();
+    if (data["value"])//be IArrayInfo
     {
-        if (data["value"])
+        let realdata = data as IArrayInfo;
+        info.componentDataType = realdata.componentDataType ? realdata.componentDataType : GLConstants.UNSIGNED_SHORT;
+
+        if (ArrayBuffer.isView(realdata.value))
         {
-            data = data as IArrayInfo;
-            let datavalue = data.value;
-            if (datavalue != null)
-            {
-                if (datavalue instanceof Array)
-                {
-                    if (data.type != null)
-                    {
-                        let type = data.type;
-                        this.value = new type(datavalue);
-                    } else
-                    {
-                        this.value = new Uint16Array(datavalue);
-                    }
-                }
-                else
-                {
-                    this.value = datavalue as Uint16Array;
-                }
-            }
-            this.buffer = data.buffer;
-            this.drawType = data.drawType | GLConstants.STATIC_DRAW;
+            info.value = realdata.value as TypedArray;
         } else
         {
-            if (data instanceof Array)
-            {
-                this.value = new Uint16Array(data);
-            } else
-            {
-                this.value = data as Uint16Array;
-            }
+            info.value = getTypedArray(realdata.value, info.componentDataType);
         }
+        info.drawType = realdata.drawType ? realdata.drawType : GLConstants.STATIC_DRAW;
+        info.count = realdata.indexCount ? realdata.indexCount : info.value.length;
+        info.offset = realdata.indexOffset ? realdata.indexOffset : 0;
+    } else
+    {
+        info.componentDataType = GLConstants.UNSIGNED_SHORT;
+        info.drawType = GLConstants.STATIC_DRAW;
 
-        this.componentDataType = getGLTypeForTypedArray(this.value);
-        this.count = this.value.length;
-        if (this.buffer == null)
+        if (ArrayBuffer.isView(data))
         {
-            let buffer = gl.createBuffer();
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.value, this.drawType);
+            info.value = data as TypedArray;
+        } else
+        {
+            info.value = getTypedArray(data as number | Array<number>, GLConstants.UNSIGNED_SHORT);
         }
+        info.count = info.value.length;
+        info.offset = 0;
     }
+    {
+        let buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, info.value, info.drawType);
+        info.buffer = buffer;
+    }
+
+    return info;
 }

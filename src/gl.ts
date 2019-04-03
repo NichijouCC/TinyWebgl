@@ -1,10 +1,5 @@
-import { VertexAttrib } from "./VertexAttrib";
-import { ArrayInfoType } from "./type/type";
+import { ArrayInfoType, IcontextOptions } from "./type/type";
 import { GeometryInfo } from "./GeometryInfo";
-import { VertexIndex } from "./VertexIndex";
-
-type contextAtts = { premultipliedAlpha?: boolean, alpha?: boolean, stencil?: boolean };
-type glRobotOps = { context?: string, contextAtts?: contextAtts, extentions?: string[] };
 
 declare global
 {
@@ -42,7 +37,7 @@ WebGLRenderingContext.prototype.addExtension = function (extname: string)
 };
 
 
-export function initContext(canvas: HTMLCanvasElement, options: glRobotOps = {}): WebGLRenderingContext
+export function initContext(canvas: HTMLCanvasElement, options: IcontextOptions = {}): WebGLRenderingContext
 {
     let type = options.context || "webgl";
     let gl = <WebGLRenderingContext>canvas.getContext(type, options.contextAtts);
@@ -59,21 +54,5 @@ export function initContext(canvas: HTMLCanvasElement, options: glRobotOps = {})
 
 }
 
-export function creatGeometryInfoFromArray(gl: WebGLRenderingContext, arrs: { [keyName: string]: ArrayInfoType })
-{
-    let meshinfo = new GeometryInfo();
-
-    Object.keys(arrs).forEach((attName) =>
-    {
-        let attInfo = arrs[attName];
-        if (attName == "indices")
-        {
-            meshinfo.indices = new VertexIndex(gl, attInfo);
-        } else
-        {
-            meshinfo.atts[attName] = new VertexAttrib(gl, attName, attInfo);
-        }
-    })
-}
 
 
