@@ -1,16 +1,18 @@
-import { IVertexAttrib, IVertexIndex, ArrayInfoType, IArrayInfo, TypedArray, IGeometry, IDrawInfo } from "./type/type";
+import { IVertexAttrib, IVertexIndex, FullArrayInfoType, IArrayInfo, TypedArray, IGeometryInfo, IDrawInfo } from "./type/type";
 import { createIndexBufferInfo } from "./VertexIndex";
 import { createAttributeBufferInfo } from "./VertexAttribute";
 
-export class GeometryInfo implements IGeometry
+export class GeometryInfo implements IGeometryInfo
 {
+    mode: number;
     atts: { [attName: string]: IVertexAttrib } = {};
-    indices: IVertexIndex;
+    indices?: IVertexIndex;
     count?: number;
     offset?: number;
 }
 
-export function createGeometryInfoFromArray(gl: WebGLRenderingContext, arrs: { [keyName: string]: ArrayInfoType | IDrawInfo })
+
+export function createGeometryInfoFromArray(gl: WebGLRenderingContext, arrs: { [keyName: string]: FullArrayInfoType | IDrawInfo }): IGeometryInfo
 {
     let info = new GeometryInfo();
     Object.keys(arrs).forEach((attName) =>
@@ -18,7 +20,7 @@ export function createGeometryInfoFromArray(gl: WebGLRenderingContext, arrs: { [
         let attInfo = arrs[attName];
         if (attName == "indices")
         {
-            info.indices = createIndexBufferInfo(gl, attInfo as ArrayInfoType);
+            info.indices = createIndexBufferInfo(gl, attInfo as FullArrayInfoType);
         } else if (attName == "draw")
         {
             let data = attInfo as IDrawInfo;
@@ -27,9 +29,8 @@ export function createGeometryInfoFromArray(gl: WebGLRenderingContext, arrs: { [
         }
         else
         {
-            info.atts[attName] = createAttributeBufferInfo(gl, attName, attInfo as ArrayInfoType);
+            info.atts[attName] = createAttributeBufferInfo(gl, attName, attInfo as FullArrayInfoType);
         }
-    })
+    });
+    return info;
 }
-
-

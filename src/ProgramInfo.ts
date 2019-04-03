@@ -8,6 +8,16 @@ export enum ShaderTypeEnum
 }
 
 
+export function setUniforms(info: IProgramInfo, uniforms: { [name: string]: any })
+{
+    uniforms.forEach(element =>
+    {
+        let setter = info.uniformsDic[element].setter;
+        let value = uniforms[element];
+        setter(value);
+    });
+}
+
 export function createShaderProgram(gl: WebGLRenderingContext, vs: string, fs: string, name: string): IProgramInfo
 {
     let vsShader = createShader(gl, ShaderTypeEnum.VS, vs, name + "_vs");
@@ -15,8 +25,8 @@ export function createShaderProgram(gl: WebGLRenderingContext, vs: string, fs: s
     if (vsShader && fsShader)
     {
         let item = gl.createProgram();
-        gl.attachShader(item, vsShader);
-        gl.attachShader(item, fsShader);
+        gl.attachShader(item, vsShader.shader);
+        gl.attachShader(item, fsShader.shader);
         gl.linkProgram(item);
         let check = gl.getProgramParameter(item, gl.LINK_STATUS);
         if (check == false)
@@ -198,10 +208,12 @@ export function getUniformSetter(gl: WebGLRenderingContext, uniformType: number,
     }
 }
 
-function getAttributeSetter(gl: WebGLRenderingContext, location: number)
+export function getAttributeSetter(gl: WebGLRenderingContext, location: number)
 {
     return (value: IVertexAttrib) =>
     {
+        gl.bindBuffer(gl.ARRAY_BUFFER, value.buffer);
+        gl.enableVertexAttribArray(location);
         gl.vertexAttribPointer(location, value.componentSize, value.componentDataType, value.normalize, value.strideInBytes, value.offsetInBytes);
     }
 }

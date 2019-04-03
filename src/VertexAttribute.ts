@@ -1,4 +1,4 @@
-import { IVertexAttrib, TypedArray, ArrayInfoType, IArrayInfo } from "./type/type";
+import { IVertexAttrib, TypedArray, FullArrayInfoType, IArrayInfo, ArrayTypeInfo } from "./type/type";
 import { GLConstants } from "./GLConstant";
 import { getTypedArray } from "./Helper";
 
@@ -7,7 +7,7 @@ export class VertexAtt implements IVertexAttrib
     name: string;
     buffer: WebGLBuffer;
 
-    value: TypedArray;
+    value: ArrayTypeInfo;
     componentSize: number;
     componentDataType: number;
     normalize: boolean;
@@ -19,11 +19,11 @@ export class VertexAtt implements IVertexAttrib
 
 
 
-export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: ArrayInfoType): VertexAtt
+export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: FullArrayInfoType): VertexAtt
 {
     let info = new VertexAtt();
     info.name = attName;
-    if (data["value"])//be IArrayInfo
+    if (data["value"] || data["buffer"])//be IArrayInfo
     {
         let realdata = data as IArrayInfo;
         info.componentDataType = realdata.componentDataType ? realdata.componentDataType : GLConstants.FLOAT;
@@ -39,14 +39,26 @@ export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: st
         info.strideInBytes = realdata.strideInBytes ? realdata.strideInBytes : 0;
         info.drawType = realdata.drawType ? realdata.drawType : GLConstants.STATIC_DRAW;
 
-        if (ArrayBuffer.isView(realdata.value))
+        // if (ArrayBuffer.isView(realdata.value))
+        // {
+        //     info.value = realdata.value as TypedArray;
+        // } else
+        // {
+        //     info.value = getTypedArray(realdata.value, info.componentDataType);
+        // }
+        if (realdata.buffer != null)
         {
-            info.value = realdata.value as TypedArray;
+            info.buffer = realdata.buffer;
         } else
         {
-            info.value = getTypedArray(realdata.value, info.componentDataType);
+            if (realdata.value != null && realdata.value instanceof Array)
+            {
+                info.value = getTypedArray(realdata.value, info.componentDataType);
+            } else
+            {
+                info.value = realdata.value;
+            }
         }
-
     } else
     {
         info.componentDataType = GLConstants.FLOAT;
@@ -55,29 +67,35 @@ export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: st
         info.offsetInBytes = 0;
         info.strideInBytes = 0;
         info.drawType = GLConstants.STATIC_DRAW;
-        if (ArrayBuffer.isView(data))
+
+        // if (ArrayBuffer.isView(data))
+        // {
+        //     info.value = data as TypedArray;
+        // } else
+        // {
+        //     info.value = getTypedArray(data as number | Array<number>, GLConstants.FLOAT);
+        // }
+        if (data instanceof Array)
         {
-            info.value = data as TypedArray;
+            info.value = getTypedArray(data as Array<number>, info.componentDataType);
         } else
         {
-            info.value = getTypedArray(data as number | Array<number>, GLConstants.FLOAT);
+            info.value = data as number | ArrayBufferView;
         }
     }
+    if (info.buffer == null)
     {
         let buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, info.buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, info.value.length, info.drawType);
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, info.value as any, info.drawType);
+
         info.buffer = buffer;
     }
     return info;
 }
 
-
-
-
 const uvRE = /uv/;
-const colorRE = /color/
-
+const colorRE = /color/;
 function guessNumComponentsFromName(name: string, length: number = null): number
 {
     let numComponents;

@@ -1,5 +1,4 @@
-import { ArrayInfoType, IcontextOptions } from "./type/type";
-import { GeometryInfo } from "./GeometryInfo";
+import { IcontextOptions, IGeometryInfo, IProgramInfo } from "./type/type";
 
 declare global
 {
@@ -54,5 +53,28 @@ export function initContext(canvas: HTMLCanvasElement, options: IcontextOptions 
 
 }
 
+
+export function setBuffersAndAttributes(gl: WebGLRenderingContext, geometry: IGeometryInfo, program: IProgramInfo)
+{
+    for (let attName in program.attsDic)
+    {
+        program.attsDic[attName].setter(geometry.atts[attName]);
+    }
+    if (geometry.indices)
+    {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.buffer);
+    }
+}
+
+export function drawBufferInfo(gl: WebGLRenderingContext, geometry: IGeometryInfo, instanceCount?: number): void
+{
+    if (geometry.indices != null)
+    {
+        gl.drawElements(geometry.mode, geometry.count || geometry.indices.count, geometry.indices.componentDataType, geometry.offset);
+    } else
+    {
+        gl.drawArrays(geometry.mode, geometry.offset || 0, geometry.count);
+    }
+}
 
 

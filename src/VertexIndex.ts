@@ -1,57 +1,73 @@
-import { IVertexIndex, TypedArray, ArrayInfoType, IArrayInfo } from "./type/type";
+import { IVertexIndex, TypedArray, FullArrayInfoType, IArrayInfo, ArrayTypeInfo } from "./type/type";
 import { GLConstants } from "./GLConstant";
 import { getTypedArray } from "./Helper";
 
 export class VertexIndex implements IVertexIndex
 {
-    value: TypedArray;
-    componentDataType: number;
+    value?: ArrayTypeInfo;
+    componentDataType?: number;
 
     buffer: WebGLBuffer;
-    drawType: number;
+    drawType?: number;
 
     count: number;
-    offset: number;
+    // submit: Function;
 }
-export function createIndexBufferInfo(gl: WebGLRenderingContext, data: ArrayInfoType): VertexIndex
+export function createIndexBufferInfo(gl: WebGLRenderingContext, data: FullArrayInfoType): VertexIndex
 {
     let info = new VertexIndex();
-    if (data["value"])//be IArrayInfo
+    if (data["value"] || data["buffer"])//be IArrayInfo
     {
         let realdata = data as IArrayInfo;
         info.componentDataType = realdata.componentDataType ? realdata.componentDataType : GLConstants.UNSIGNED_SHORT;
 
-        if (ArrayBuffer.isView(realdata.value))
+        if (realdata.buffer != null)
         {
-            info.value = realdata.value as TypedArray;
+            info.count = realdata.indexCount;
+            if (realdata.indexCount == null)
+            {
+                console.error("indexCount is need when value if data.value is buffer");
+            }
         } else
         {
-            info.value = getTypedArray(realdata.value, info.componentDataType);
+            if (typeof realdata.value == "number")
+            {
+                info.value = realdata.value;
+                info.count = realdata as number;
+            } else
+            {
+                if (realdata.value instanceof Array)
+                {
+                    info.value = getTypedArray(realdata.value, info.componentDataType);
+                }
+                info.count = (info.value as TypedArray).length;
+            }
         }
         info.drawType = realdata.drawType ? realdata.drawType : GLConstants.STATIC_DRAW;
-        info.count = realdata.indexCount ? realdata.indexCount : info.value.length;
-        info.offset = realdata.indexOffset ? realdata.indexOffset : 0;
     } else
     {
         info.componentDataType = GLConstants.UNSIGNED_SHORT;
         info.drawType = GLConstants.STATIC_DRAW;
 
-        if (ArrayBuffer.isView(data))
+        if (typeof data == "number")
         {
-            info.value = data as TypedArray;
+            info.value = data;
+            info.count = data as number;
         } else
         {
-            info.value = getTypedArray(data as number | Array<number>, GLConstants.UNSIGNED_SHORT);
+            if (data instanceof Array)
+            {
+                info.value = getTypedArray(data, info.componentDataType);
+            }
+            info.count = (info.value as TypedArray).length;
         }
-        info.count = info.value.length;
-        info.offset = 0;
     }
+    if (info.buffer == null)
     {
         let buffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, info.value, info.drawType);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, info.value as any, info.drawType);
         info.buffer = buffer;
     }
-
     return info;
 }

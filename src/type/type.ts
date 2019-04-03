@@ -2,7 +2,21 @@ export type TypedArrType = Float64ArrayConstructor | Float32ArrayConstructor | I
 
 export type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
 
-export type ArrayInfoType = number | number[] | ArrayBufferView | IArrayInfo;
+/**
+ * attribute的数据源类型
+ * 
+ * todo: number 有存在的意义？
+ */
+export type ArrayTypeInfo = number | ArrayBufferView;
+
+/**
+ * 给创建attribute buffer足够的自由度;
+ * 可以直接传buffer进来，自定义它的附加信息;
+ * 
+ * arraybuffer 类型字面不可读，舍弃掉.可以自行通过 IArrayInfo玩,
+ */
+export type FullArrayInfoType = ArrayTypeInfo | number[] | IArrayInfo;
+
 
 export interface IcontextAtt
 {
@@ -18,13 +32,18 @@ export interface IcontextOptions
     extentions?: string[];
 }
 
+/**
+ * buffer和value 必须存在一个;
+ * 
+ */
 export interface IArrayInfo
 {
     buffer?: WebGLBuffer;
 
-    value: number | number[] | ArrayBufferView;
+    value?: ArrayTypeInfo;
+
     componentSize?: number;
-    // size?: number;
+
     componentDataType?: number;//gl.float
     normalize?: boolean;
     offsetInBytes?: number;
@@ -32,15 +51,20 @@ export interface IArrayInfo
     divisor?: number;
     drawType?: number;
 
+    /**
+     * for index buffer
+     */
     indexCount?: number;
+    /**
+     * for index buffer
+     */
     indexOffset?: number;
 }
-
 
 export interface IVertexAttrib
 {
     name: string;
-    value: TypedArray;
+    value?: ArrayTypeInfo;
 
     buffer: WebGLBuffer;
     drawType: number;
@@ -56,29 +80,31 @@ export interface IVertexAttrib
 
 export class IDrawInfo
 {
+    mode?: number;
     count?: number;
     offset?: number;
 }
 
 export interface IVertexIndex
 {
-    value: TypedArray;
-    componentDataType: number;
+    value?: ArrayTypeInfo;
+    componentDataType?: number;
 
     buffer: WebGLBuffer;
-    drawType: number;
+    drawType?: number;
+
+    count: number;
 }
 
 
-export interface IGeometry
+export interface IGeometryInfo
 {
     atts: { [attName: string]: IVertexAttrib };
-    indices: IVertexIndex;
+    indices?: IVertexIndex;
     count?: number;
     offset?: number;
+    mode?: number;
 }
-
-
 
 export interface IUniformInfo
 {
