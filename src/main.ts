@@ -1,7 +1,7 @@
 console.log("@@@@@@@@@@@@@");
 import { initContext, setBuffersAndAttributes, drawBufferInfo } from "gl";
 import { createGeometryInfoFromArray } from "./GeometryInfo";
-import { createShaderProgram } from "./ProgramInfo";
+import { createProgramInfo } from "./ProgramInfo";
 
 
 
@@ -12,9 +12,9 @@ window.onload = () =>
 
     let geometry = createGeometryInfoFromArray(gl,
         {
-            "a_pos": [-0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
-            "indices": [0, 1, 2, 0, 3, 2]
-        });
+            "a_pos": [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
+
+        }, [0, 1, 2, 0, 3, 2]);
 
     let def_error_vs: string = "\
         attribute vec3 a_pos;\
@@ -29,16 +29,18 @@ window.onload = () =>
         {\
             gl_FragData[0] = vec4(1,0,0,1);\
         }";
-    let program = createShaderProgram(gl, def_error_vs, def_error_fs, "def_error");
+    let program = createProgramInfo(gl, def_error_vs, def_error_fs, "def_error");
 
 
     let render = () =>
     {
+        gl.clearColor(0.5, 0.1, 0.5, 1);
+        gl.clearDepth(0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(program.program);
         setBuffersAndAttributes(gl, geometry, program);
         drawBufferInfo(gl, geometry);
 
-        // console.warn("draw!!!!!!");
         requestAnimationFrame(() =>
         {
             render();

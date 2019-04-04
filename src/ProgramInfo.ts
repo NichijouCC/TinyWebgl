@@ -18,7 +18,7 @@ export function setUniforms(info: IProgramInfo, uniforms: { [name: string]: any 
     });
 }
 
-export function createShaderProgram(gl: WebGLRenderingContext, vs: string, fs: string, name: string): IProgramInfo
+export function createProgramInfo(gl: WebGLRenderingContext, vs: string, fs: string, name: string): IProgramInfo
 {
     let vsShader = createShader(gl, ShaderTypeEnum.VS, vs, name + "_vs");
     let fsShader = createShader(gl, ShaderTypeEnum.FS, fs, name + "_fs");

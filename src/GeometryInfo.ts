@@ -4,33 +4,45 @@ import { createAttributeBufferInfo } from "./VertexAttribute";
 
 export class GeometryInfo implements IGeometryInfo
 {
-    mode: number;
     atts: { [attName: string]: IVertexAttrib } = {};
     indices?: IVertexIndex;
-    count?: number;
-    offset?: number;
+
+    mode: number;
+    count: number;
+    offset: number;
 }
 
 
-export function createGeometryInfoFromArray(gl: WebGLRenderingContext, arrs: { [keyName: string]: FullArrayInfoType | IDrawInfo }): IGeometryInfo
+export function createGeometryInfoFromArray(gl: WebGLRenderingContext, atts: { [keyName: string]: FullArrayInfoType }, indices?: FullArrayInfoType, draw?: IDrawInfo): IGeometryInfo
 {
     let info = new GeometryInfo();
-    Object.keys(arrs).forEach((attName) =>
+
+    if (draw != null)
     {
-        let attInfo = arrs[attName];
-        if (attName == "indices")
+        info.mode = draw.mode || gl.TRIANGLES;
+        info.count = draw.count;
+        info.offset = draw.offset || 0;
+    } else
+    {
+        info.mode = gl.TRIANGLES;
+        info.offset = 0;
+    }
+    if (indices != null)
+    {
+        info.indices = createIndexBufferInfo(gl, indices);
+        if (info.count == null)
         {
-            info.indices = createIndexBufferInfo(gl, attInfo as FullArrayInfoType);
-        } else if (attName == "draw")
-        {
-            let data = attInfo as IDrawInfo;
-            info.count = data.count;
-            info.offset = data.offset;
+            info.count = info.indices.count;
         }
-        else
+    }
+
+    for (let attName in atts)
+    {
+        info.atts[attName] = createAttributeBufferInfo(gl, attName, atts[attName]);
+        if (info.count == null)
         {
-            info.atts[attName] = createAttributeBufferInfo(gl, attName, attInfo as FullArrayInfoType);
+            info.count = (info.atts[attName].value as TypedArray).length;
         }
-    });
+    }
     return info;
 }

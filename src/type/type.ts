@@ -101,9 +101,9 @@ export interface IGeometryInfo
 {
     atts: { [attName: string]: IVertexAttrib };
     indices?: IVertexIndex;
-    count?: number;
-    offset?: number;
-    mode?: number;
+    count: number;
+    offset: number;
+    mode: number;
 }
 
 export interface IUniformInfo

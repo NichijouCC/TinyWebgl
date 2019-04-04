@@ -70,10 +70,10 @@ export function drawBufferInfo(gl: WebGLRenderingContext, geometry: IGeometryInf
 {
     if (geometry.indices != null)
     {
-        gl.drawElements(geometry.mode, geometry.count || geometry.indices.count, geometry.indices.componentDataType, geometry.offset);
+        gl.drawElements(geometry.mode, geometry.count, geometry.indices.componentDataType, geometry.offset);
     } else
     {
-        gl.drawArrays(geometry.mode, geometry.offset || 0, geometry.count);
+        gl.drawArrays(geometry.mode, geometry.offset, geometry.count);
     }
 }
 
