@@ -9,7 +9,7 @@ window.onload = () =>
 {
     let cc = document.getElementById("canvas") as HTMLCanvasElement;
     let gl = initContext(cc, { extentions: ["OES_vertex_array_object"] });
-
+    let be2 = gl.beWebgl2;
     let geometry = createGeometryInfoFromArray(gl,
         {
             "a_pos": [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],

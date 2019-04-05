@@ -1,5 +1,5 @@
 import { GLConstants } from "./GLConstant";
-import { IProgramInfo, IVertexAttrib, IAttributeInfo, IUniformInfo } from "./type/type";
+import { IProgramInfo, IVertexAttrib, IAttributeInfo, IUniformInfo, IShaderState } from "./type/type";
 
 export enum ShaderTypeEnum
 {
@@ -8,7 +8,7 @@ export enum ShaderTypeEnum
 }
 
 
-export function setUniforms(info: IProgramInfo, uniforms: { [name: string]: any })
+export function setProgramUniforms(info: IProgramInfo, uniforms: { [name: string]: any })
 {
     uniforms.forEach(element =>
     {

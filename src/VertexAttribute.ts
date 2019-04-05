@@ -1,97 +1,84 @@
-import { IVertexAttrib, TypedArray, FullArrayInfoType, IArrayInfo, ArrayTypeInfo } from "./type/type";
+import { IVertexAttrib, TypedArray, ArrayTypeInfo, IArrayInfo } from "./type/type";
 import { GLConstants } from "./GLConstant";
-import { getTypedArray } from "./Helper";
+import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
-export class VertexAtt implements IVertexAttrib
+// export class VertexAtt implements IVertexAttrib
+// {
+//     name: string;
+//     buffer: WebGLBuffer;
+
+//     value: ArrayTypeInfo;
+//     componentSize: number;
+//     componentDataType: number;
+//     normalize: boolean;
+//     offsetInBytes: number;
+//     strideInBytes: number;
+//     divisor?: number;
+//     drawType: number;
+// }
+
+export function deduceVertexAttArrayInfo(attName: string, data: ArrayTypeInfo): IVertexAttrib
 {
-    name: string;
-    buffer: WebGLBuffer;
-
-    value: ArrayTypeInfo;
-    componentSize: number;
-    componentDataType: number;
-    normalize: boolean;
-    offsetInBytes: number;
-    strideInBytes: number;
-    divisor?: number;
-    drawType: number;
-}
-
-
-
-export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: FullArrayInfoType): VertexAtt
-{
-    let info = new VertexAtt();
-    info.name = attName;
-    if (data["value"] || data["buffer"])//be IArrayInfo
+    let newData: IArrayInfo = {};
+    if (data instanceof Array)
     {
-        let realdata = data as IArrayInfo;
-        info.componentDataType = realdata.componentDataType ? realdata.componentDataType : GLConstants.FLOAT;
-        info.componentSize = realdata.componentSize ? realdata.componentSize : guessNumComponentsFromName(attName);
-        if (realdata.normalize != null)
-        {
-            info.normalize = realdata.normalize;
-        } else
-        {
-            info.normalize = false;
-        }
-        info.offsetInBytes = realdata.offsetInBytes ? realdata.offsetInBytes : 0;
-        info.strideInBytes = realdata.strideInBytes ? realdata.strideInBytes : 0;
-        info.drawType = realdata.drawType ? realdata.drawType : GLConstants.STATIC_DRAW;
-
-        // if (ArrayBuffer.isView(realdata.value))
-        // {
-        //     info.value = realdata.value as TypedArray;
-        // } else
-        // {
-        //     info.value = getTypedArray(realdata.value, info.componentDataType);
-        // }
-        if (realdata.buffer != null)
-        {
-            info.buffer = realdata.buffer;
-        } else
-        {
-            if (realdata.value != null && realdata.value instanceof Array)
-            {
-                info.value = getTypedArray(realdata.value, info.componentDataType);
-            } else
-            {
-                info.value = realdata.value;
-            }
-        }
+        newData.value = new Float32Array(data);
+    } else if (ArrayBuffer.isView(data))
+    {
+        newData.value = data;
     } else
     {
-        info.componentDataType = GLConstants.FLOAT;
-        info.componentSize = guessNumComponentsFromName(attName);
-        info.normalize = false;
-        info.offsetInBytes = 0;
-        info.strideInBytes = 0;
-        info.drawType = GLConstants.STATIC_DRAW;
-
-        // if (ArrayBuffer.isView(data))
-        // {
-        //     info.value = data as TypedArray;
-        // } else
-        // {
-        //     info.value = getTypedArray(data as number | Array<number>, GLConstants.FLOAT);
-        // }
-        if (data instanceof Array)
+        let arraydata = data.value;
+        if (arraydata instanceof Array)
         {
-            info.value = getTypedArray(data as Array<number>, info.componentDataType);
+            let type = data.componentDataType ? getArrayTypeForGLtype(data.componentDataType) : Float32Array;
+            newData.value = new type(arraydata);
         } else
         {
-            info.value = data as number | ArrayBufferView;
+            newData.value = arraydata;
         }
     }
-    if (info.buffer == null)
+
+    //------------data is IarrayInfo now
+    let vertexData = newData as IVertexAttrib;
+    vertexData.name = attName;
+
+    if (newData.componentDataType == null)
+    {
+        vertexData.componentDataType = newData.value ? getGLTypeForTypedArray(newData.value as TypedArray) : GLConstants.FLOAT;
+    } else
+    {
+        vertexData.componentDataType = newData.componentDataType;
+    }
+    if (newData.length == null)
+    {
+        vertexData.length = newData.value ? (newData.value as TypedArray).length : null;
+    } else
+    {
+        vertexData.length = newData.length;
+    }
+    vertexData.componentSize = newData.componentSize ? newData.componentSize : guessNumComponentsFromName(attName);
+    vertexData.normalize = newData.normalize != null ? newData.normalize : false;
+    vertexData.offsetInBytes = newData.offsetInBytes ? newData.offsetInBytes : 0;
+    vertexData.strideInBytes = newData.strideInBytes ? newData.strideInBytes : 0;
+    vertexData.drawType = newData.drawType ? newData.drawType : GLConstants.STATIC_DRAW;
+
+    return vertexData;
+}
+
+export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: ArrayTypeInfo): IVertexAttrib
+{
+    let vertexdata = deduceVertexAttArrayInfo(attName, data);
+
+    if (vertexdata.buffer == null)
     {
         let buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, info.value as any, info.drawType);
+        gl.bufferData(gl.ARRAY_BUFFER, vertexdata.value, vertexdata.drawType);
 
-        info.buffer = buffer;
+        vertexdata.buffer = buffer;
     }
-    return info;
+    return vertexdata;
 }
 
 const uvRE = /uv/;

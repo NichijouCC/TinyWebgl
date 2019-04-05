@@ -8,7 +8,9 @@ declare global
 
     interface WebGLRenderingContext
     {
-        beWebgl2: boolean;
+        __defineSetter__(arg0: string, arg1: (val: any) => void): any;
+        __defineGetter__(arg0: string, arg1: (val: any) => void): any;
+        beWebgl2: any;
         addExtension(extName: string);
         createVertexArray(): any;
         bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
@@ -35,13 +37,26 @@ WebGLRenderingContext.prototype.addExtension = function (extname: string)
     }
 };
 
+WebGLRenderingContext.prototype.__defineGetter__("beWebgl2", function ()
+{
+    if (this._bewebgl2 == null)
+    {
+        let version = this.getParameter(this.VERSION);
+        this._bewebgl2 = version.indexOf("WebGL 2.0") === 0;
+        return this._bewebgl2;
+    }
+    return this._bewebgl2;
+});
+WebGLRenderingContext.prototype.__defineSetter__("beWebgl2", function (val)
+{
+    this._bewebgl2 = val;
+});
 
 export function initContext(canvas: HTMLCanvasElement, options: IcontextOptions = {}): WebGLRenderingContext
 {
     let type = options.context || "webgl";
     let gl = <WebGLRenderingContext>canvas.getContext(type, options.contextAtts);
-    gl.beWebgl2 = (type == "webgl2");
-
+    // gl.beWebgl2 = (type == "webgl2");
     if (options.extentions != null)
     {
         options.extentions.forEach((ext) =>
@@ -49,9 +64,16 @@ export function initContext(canvas: HTMLCanvasElement, options: IcontextOptions 
             gl.addExtension(ext);
         });
     }
+
+    // canvas.addEventListener('webglcontextlost', function (e)
+    // {
+    //     console.log(e);
+    // }, false);
+
     return gl;
 
 }
+
 
 
 export function setBuffersAndAttributes(gl: WebGLRenderingContext, geometry: IGeometryInfo, program: IProgramInfo)

@@ -1,73 +1,73 @@
-import { IVertexIndex, TypedArray, FullArrayInfoType, IArrayInfo, ArrayTypeInfo } from "./type/type";
+import { IVertexIndex, TypedArray, ArrayTypeInfo, IArrayInfo } from "./type/type";
 import { GLConstants } from "./GLConstant";
-import { getTypedArray } from "./Helper";
+import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
-export class VertexIndex implements IVertexIndex
+// export class VertexIndex implements IVertexIndex
+// {
+//     value?: ArrayTypeInfo;
+//     componentDataType?: number;
+
+//     buffer: WebGLBuffer;
+//     drawType?: number;
+
+//     count: number;
+//     // submit: Function;
+// }
+
+export function deduceVertexIndexArrayInfo(data: ArrayTypeInfo): IVertexIndex
 {
-    value?: ArrayTypeInfo;
-    componentDataType?: number;
-
-    buffer: WebGLBuffer;
-    drawType?: number;
-
-    count: number;
-    // submit: Function;
-}
-export function createIndexBufferInfo(gl: WebGLRenderingContext, data: FullArrayInfoType): VertexIndex
-{
-    let info = new VertexIndex();
-    if (data["value"] || data["buffer"])//be IArrayInfo
+    let newData: IArrayInfo = {};
+    if (data instanceof Array)
     {
-        let realdata = data as IArrayInfo;
-        info.componentDataType = realdata.componentDataType ? realdata.componentDataType : GLConstants.UNSIGNED_SHORT;
-
-        if (realdata.buffer != null)
-        {
-            info.count = realdata.indexCount;
-            if (realdata.indexCount == null)
-            {
-                console.error("indexCount is need when value if data.value is buffer");
-            }
-        } else
-        {
-            if (typeof realdata.value == "number")
-            {
-                info.value = realdata.value;
-                info.count = realdata as number;
-            } else
-            {
-                if (realdata.value instanceof Array)
-                {
-                    info.value = getTypedArray(realdata.value, info.componentDataType);
-                }
-                info.count = (info.value as TypedArray).length;
-            }
-        }
-        info.drawType = realdata.drawType ? realdata.drawType : GLConstants.STATIC_DRAW;
+        newData.value = new Uint16Array(data);
+    } else if (ArrayBuffer.isView(data))
+    {
+        newData.value = data;
     } else
     {
-        info.componentDataType = GLConstants.UNSIGNED_SHORT;
-        info.drawType = GLConstants.STATIC_DRAW;
-
-        if (typeof data == "number")
+        let arraydata = data.value;
+        if (arraydata instanceof Array)
         {
-            info.value = data;
-            info.count = data as number;
+            let type = data.componentDataType ? getArrayTypeForGLtype(data.componentDataType) : Uint16Array;
+            newData.value = new type(arraydata);
         } else
         {
-            if (data instanceof Array)
-            {
-                info.value = getTypedArray(data, info.componentDataType);
-            }
-            info.count = (info.value as TypedArray).length;
+            newData.value = arraydata;
         }
     }
-    if (info.buffer == null)
+
+    //------------data is IarrayInfo now
+    let vertexData = newData as IVertexIndex;
+    vertexData.name = "indices";
+    if (newData.componentDataType == null)
+    {
+        vertexData.componentDataType = newData.value ? getGLTypeForTypedArray(newData.value as TypedArray) : GLConstants.UNSIGNED_SHORT;
+    } else
+    {
+        vertexData.componentDataType = newData.componentDataType;
+    }
+    if (newData.length == null)
+    {
+        vertexData.length = newData.value ? (newData.value as TypedArray).length : null;
+    } else
+    {
+        vertexData.length = newData.length;
+    }
+    vertexData.drawType = newData.drawType ? newData.drawType : GLConstants.STATIC_DRAW;
+
+    // vertexData.count = newData.indexCount ? newData.indexCount : vertexData.length;
+    return vertexData;
+}
+
+export function createIndexBufferInfo(gl: WebGLRenderingContext, data: ArrayTypeInfo): IVertexIndex
+{
+    let vertexdata = deduceVertexIndexArrayInfo(data);
+    if (vertexdata.buffer == null)
     {
         let buffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, info.value as any, info.drawType);
-        info.buffer = buffer;
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, vertexdata.value, vertexdata.drawType);
+        vertexdata.buffer = buffer;
     }
-    return info;
+    return vertexdata;
 }
