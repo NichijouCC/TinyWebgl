@@ -1,4 +1,4 @@
-import { IVertexAttrib, IVertexIndex, TypedArray, IGeometryInfo, IDrawInfo, ArrayTypeInfo } from "./type/type";
+import { IVertexAttrib, IVertexIndex, TypedArray, IGeometryInfo, IDrawInfo, TArrayInfo } from "./type/type";
 import { createIndexBufferInfo } from "./VertexIndex";
 import { createAttributeBufferInfo } from "./VertexAttribute";
 
@@ -13,7 +13,7 @@ export class GeometryInfo implements IGeometryInfo
 }
 
 
-export function createGeometryInfoFromArray(gl: WebGLRenderingContext, atts: { [keyName: string]: ArrayTypeInfo }, indices?: ArrayTypeInfo, draw?: IDrawInfo): IGeometryInfo
+export function createGeometryInfoFromArray(gl: WebGLRenderingContext, atts: { [keyName: string]: TArrayInfo }, indices?: TArrayInfo, draw?: IDrawInfo): IGeometryInfo
 {
     let info = new GeometryInfo();
 

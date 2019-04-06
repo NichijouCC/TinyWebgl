@@ -1,4 +1,4 @@
-import { IVertexAttrib, TypedArray, ArrayTypeInfo, IArrayInfo } from "./type/type";
+import { IVertexAttrib, TypedArray, TArrayInfo, IArrayInfo } from "./type/type";
 import { GLConstants } from "./GLConstant";
 import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
@@ -17,7 +17,7 @@ import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./
 //     drawType: number;
 // }
 
-export function deduceVertexAttArrayInfo(attName: string, data: ArrayTypeInfo): IVertexAttrib
+export function deduceVertexAttArrayInfo(attName: string, data: TArrayInfo): IVertexAttrib
 {
     let newData: IArrayInfo = {};
     if (data instanceof Array)
@@ -66,7 +66,7 @@ export function deduceVertexAttArrayInfo(attName: string, data: ArrayTypeInfo): 
     return vertexData;
 }
 
-export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: ArrayTypeInfo): IVertexAttrib
+export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: TArrayInfo): IVertexAttrib
 {
     let vertexdata = deduceVertexAttArrayInfo(attName, data);
 

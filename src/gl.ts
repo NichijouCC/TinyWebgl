@@ -1,4 +1,4 @@
-import { IcontextOptions, IGeometryInfo, IProgramInfo } from "./type/type";
+import { IcontextOptions, IGeometryInfo, IBassProgramInfo, IProgramState } from "./type/type";
 
 declare global
 {
@@ -15,6 +15,8 @@ declare global
         createVertexArray(): any;
         bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
         deleteVertexArray(vao: WebGLVertexArrayObject): void;
+
+        vertexAttribDivisor(index: number, divisor: number): void;
     }
 }
 
@@ -74,9 +76,7 @@ export function initContext(canvas: HTMLCanvasElement, options: IcontextOptions 
 
 }
 
-
-
-export function setBuffersAndAttributes(gl: WebGLRenderingContext, geometry: IGeometryInfo, program: IProgramInfo)
+export function setBuffersAndAttributes(gl: WebGLRenderingContext, geometry: IGeometryInfo, program: IBassProgramInfo)
 {
     for (let attName in program.attsDic)
     {
@@ -98,5 +98,3 @@ export function drawBufferInfo(gl: WebGLRenderingContext, geometry: IGeometryInf
         gl.drawArrays(geometry.mode, geometry.offset, geometry.count);
     }
 }
-
-

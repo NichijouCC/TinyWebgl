@@ -31,6 +31,28 @@ export function getArrayTypeForGLtype(glType: number)
     throw "unsupported gltype to array type";
 }
 
+export function getbytesForGLtype(glType: number)
+{
+    switch (glType)
+    {
+        case GLConstants.BYTE: return 1;
+        case GLConstants.UNSIGNED_BYTE: return 1;
+
+        case GLConstants.SHORT: return 2;
+        case GLConstants.UNSIGNED_SHORT_4_4_4_4: return 2;
+        case GLConstants.UNSIGNED_SHORT: return 2;
+
+        case GLConstants.INT: return 4;
+        case GLConstants.UNSIGNED_INT: return 4;
+
+        case GLConstants.HALF_FLOAT: return 2;
+        case GLConstants.HALF_FLOAT_OES: return 2;
+        case GLConstants.FLOAT: return 4;
+        default:
+            throw "unsupported gltype to bytesPerElement";
+    }
+}
+
 
 export function getTypedArray(data: number | Array<number>, gltype: number): TypedArray
 {

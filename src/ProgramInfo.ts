@@ -1,24 +1,69 @@
 import { GLConstants } from "./GLConstant";
-import { IProgramInfo, IVertexAttrib, IAttributeInfo, IUniformInfo, IShaderState } from "./type/type";
+import { IBassProgramInfo, IVertexAttrib, IAttributeInfo, IUniformInfo, IProgramState } from "./type/type";
+import { setProgramState } from "./State";
 
 export enum ShaderTypeEnum
 {
     VS,
     FS
 }
-
-
-export function setProgramUniforms(info: IProgramInfo, uniforms: { [name: string]: any })
+export interface IProgramInfo extends IBassProgramInfo
 {
-    uniforms.forEach(element =>
-    {
-        let setter = info.uniformsDic[element].setter;
-        let value = uniforms[element];
-        setter(value);
-    });
+    uniforms?: { [name: string]: any };
+    states?: IProgramState;
 }
 
-export function createProgramInfo(gl: WebGLRenderingContext, vs: string, fs: string, name: string): IProgramInfo
+export function activeProgram(gl: WebGLRenderingContext, program: IProgramInfo)
+{
+    gl.useProgram(program.program);
+
+    if (program.uniforms)
+    {
+        setProgramUniforms(program, program.uniforms);
+    }
+    if (program.states)
+    {
+        setProgramState(gl, program.states);
+    }
+}
+
+
+export function setProgramUniforms(info: IBassProgramInfo, uniforms: { [name: string]: any })
+{
+    for (let key in uniforms)
+    {
+        let setter = info.uniformsDic[key].setter;
+        let value = uniforms[key];
+        setter(value);
+    }
+}
+
+export interface IProgramInfoOptions
+{
+    vs: string;
+    fs: string;
+    name: string;
+    uniforms?: { [name: string]: any };
+    states?: IProgramState;
+}
+
+
+export function createProgramInfo(gl: WebGLRenderingContext, op: IProgramInfoOptions): IProgramInfo
+{
+    let info = createBassProgramInfo(gl, op.vs, op.fs, op.name) as IProgramInfo;
+    if (op.uniforms)
+    {
+        info.uniforms = op.uniforms;
+    }
+    if (op.states)
+    {
+        info.states = op.states;
+    }
+    return info;
+}
+
+
+export function createBassProgramInfo(gl: WebGLRenderingContext, vs: string, fs: string, name: string): IBassProgramInfo
 {
     let vsShader = createShader(gl, ShaderTypeEnum.VS, vs, name + "_vs");
     let fsShader = createShader(gl, ShaderTypeEnum.FS, fs, name + "_fs");
@@ -65,6 +110,8 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
 {
     let uniformDic: { [name: string]: IUniformInfo } = {};
     let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+
+    gl["bindpoint"] = 0;
     for (let i = 0; i < numUniforms; i++) 
     {
         let uniformInfo = gl.getActiveUniform(program, i);
@@ -82,7 +129,8 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
             // name = name.substr(0, name.length - 3);
         }
         if (location == null) continue;
-        let func = getUniformSetter(gl, type, beArray, location);
+        let bindpoint = gl["bindpoint"];
+        let func = getUniformSetter(gl, type, beArray, location, bindpoint);
         uniformDic[name] = { name: name, location: location, type: type, setter: func };
     }
     return uniformDic;
@@ -111,7 +159,7 @@ export function createShader(gl: WebGLRenderingContext, type: ShaderTypeEnum, so
 }
 
 
-export function getUniformSetter(gl: WebGLRenderingContext, uniformType: number, beArray: boolean, location: WebGLUniformLocation)
+export function getUniformSetter(gl: WebGLRenderingContext, uniformType: number, beArray: boolean, location: WebGLUniformLocation, bindpoint: number)
 {
     switch (uniformType)
     {
@@ -202,6 +250,15 @@ export function getUniformSetter(gl: WebGLRenderingContext, uniformType: number,
                 gl.uniformMatrix4fv(location, false, value);
             }
             break;
+        case gl.SAMPLER_2D:
+            return (value) =>
+            {
+                gl.activeTexture(gl.TEXTURE0 + bindpoint);
+                gl.bindTexture(gl.TEXTURE_2D, value);
+                gl.uniform1i(location, bindpoint);
+
+                gl["bindpoint"] = gl["bindpoint"] + 1;
+            }
         default:
             console.error("uniformSetter not handle type:" + uniformType + " yet!");
             break;
@@ -215,5 +272,9 @@ export function getAttributeSetter(gl: WebGLRenderingContext, location: number)
         gl.bindBuffer(gl.ARRAY_BUFFER, value.buffer);
         gl.enableVertexAttribArray(location);
         gl.vertexAttribPointer(location, value.componentSize, value.componentDataType, value.normalize, value.strideInBytes, value.offsetInBytes);
+        if (value.divisor !== undefined)
+        {
+            gl.vertexAttribDivisor(location, value.divisor);
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { IVertexIndex, TypedArray, ArrayTypeInfo, IArrayInfo } from "./type/type";
+import { IVertexIndex, TypedArray, TArrayInfo, IArrayInfo } from "./type/type";
 import { GLConstants } from "./GLConstant";
 import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
@@ -14,7 +14,7 @@ import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./
 //     // submit: Function;
 // }
 
-export function deduceVertexIndexArrayInfo(data: ArrayTypeInfo): IVertexIndex
+export function deduceVertexIndexArrayInfo(data: TArrayInfo): IVertexIndex
 {
     let newData: IArrayInfo = {};
     if (data instanceof Array)
@@ -59,7 +59,7 @@ export function deduceVertexIndexArrayInfo(data: ArrayTypeInfo): IVertexIndex
     return vertexData;
 }
 
-export function createIndexBufferInfo(gl: WebGLRenderingContext, data: ArrayTypeInfo): IVertexIndex
+export function createIndexBufferInfo(gl: WebGLRenderingContext, data: TArrayInfo): IVertexIndex
 {
     let vertexdata = deduceVertexIndexArrayInfo(data);
     if (vertexdata.buffer == null)

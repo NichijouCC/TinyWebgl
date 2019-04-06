@@ -1,11 +1,9 @@
-export type TypedArrType = Float64ArrayConstructor | Float32ArrayConstructor | Int32ArrayConstructor | Int16ArrayConstructor | Int8ArrayConstructor | Uint32ArrayConstructor | Uint16ArrayConstructor | Uint8ArrayConstructor;
-
 export type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array;
 
 /**
  * vertex attribute/index 的数据源类型
  */
-export type ArrayTypeInfo = number[] | ArrayBufferView | IArrayInfo;
+export type TArrayInfo = number[] | ArrayBufferView | IArrayInfo;
 
 
 /**
@@ -126,7 +124,7 @@ export interface IAttributeInfo
 /**
  * shaderprogram
  */
-export interface IProgramInfo
+export interface IBassProgramInfo
 {
     programName: string;
     program: WebGLProgram;
@@ -135,7 +133,7 @@ export interface IProgramInfo
 
 }
 
-export interface IShaderState
+export interface IProgramState
 {
     /**
      * 标志符号
@@ -150,8 +148,6 @@ export interface IShaderState
     //  *  webgl default value is gl.CCW， generally do not need change this
     //  */
     // frontFace?: number;
-
-
 
     /**
      * default= true
@@ -279,8 +275,71 @@ export interface IShaderState
     colorMask?: [];
 }
 
-export interface IFullProgramInfo extends IProgramInfo
+export interface IFullProgramInfo extends IBassProgramInfo
 {
-    states?: IShaderState;
+    states?: IProgramState;
     uniforms: { [uniformName: string]: any };
+}
+
+
+//---------------pixstore-------------------global state
+// preMultiply_alpha?: boolean;
+// flip_y?: boolean;
+
+
+export interface ITextureInfo
+{
+    target?: number
+
+    //----------------texParameteri-------------
+    filter_max?: number;
+    filter_min?: number;
+    /**
+     * 为了uv滚动
+     */
+    wrap_s?: number;
+    wrap_t?: number;
+
+    // arr:Uint8Array;
+    // image:ImageData;
+
+    //-----------------------------
+    pixelFormat?: number;
+
+    enableMipMap?: boolean;
+
+    width?: number;
+
+    height?: number;
+}
+
+export interface ITexViewDataInfo extends ITextureInfo
+{
+    // data: ArrayBufferView;
+    /**
+     * when data is A Uint8Array , pixelDatatype  can be gl.UNSIGNED_BYTE.
+     * 
+     * when data is A Uint16Array , pixelDatatype  can be gl.UNSIGNED_SHORT_5_6_5, gl.UNSIGNED_SHORT_4_4_4_4, gl.UNSIGNED_SHORT_5_5_5_1, gl.UNSIGNED_SHORT or ext.HALF_FLOAT_OES.
+     * 
+     * when data is A Uint32Array , pixelDatatype  can be is gl.UNSIGNED_INT or ext.UNSIGNED_INT_24_8_WEBGL.
+     * 
+     * when data is A Float32Array , pixelDatatype  can be gl.FLOAT.
+     */
+    pixelDatatype: number;
+
+    width: number;
+
+    height: number;
+
+}
+
+export interface ITexHtmlDataInfo extends ITextureInfo
+{
+    // data: HTMLImageElement | HTMLCanvasElement;
+
+    pixelDatatype?: number;
+
+    width?: number;
+
+    height?: number;
 }
