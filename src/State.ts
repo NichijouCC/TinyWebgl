@@ -51,7 +51,7 @@ export function setProgramState(gl: WebGLRenderingContext, state: IProgramState)
  * @param state 原始 webgl state
  */
 // state 是给每个物体 render用的，是不想受前一个物体render影响，所以需要推断出完整的 webgl state，缺失的按照默认值
-export function deduceFullShderState(state: IProgramState): IProgramState
+function deduceFullShderState(state: IProgramState): IProgramState
 {
     //----------------------------cull face
     if (state.enableCullFace == null)

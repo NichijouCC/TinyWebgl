@@ -2,11 +2,16 @@ const path = require('path');
 
 module.exports = {
     mode: 'development',
-    entry: './src/main.ts',//唯一入口文件
+    entry: {
+        Twebgl: "./src/Twebgl.ts",
+        main: "./src/main.ts"
+    },
     output: {
-        filename: 'main.js',//打包后输出文件的文件名
+        filename: '[name].js',//打包后输出文件的文件名
         path: path.resolve(__dirname, 'dist'),//打包后的文件存放的地方
-        publicPath: '/dist/'
+        publicPath: '/dist/',
+        library: 'Twebgl',
+        libraryTarget: 'umd'
     },
     devtool: 'source-map',
     module: {
@@ -57,7 +62,7 @@ DtsBundlePlugin.prototype.apply = function (compiler)
         dts.bundle({
             name: 'test',
             main: rootDir + '/dist/**/*.d.ts',
-            out: rootDir + '/dist/main.d.ts',
+            out: rootDir + '/dist/Twebgl.d.ts',
             removeSource: true,
             outputAsModuleFolder: true,
             exclude: []

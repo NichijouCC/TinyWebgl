@@ -1,6 +1,6 @@
-import { IVertexIndex, TypedArray, TArrayInfo, IArrayInfo } from "./type";
+import { IVertexIndex, TypedArray, TArrayInfo } from "./type";
 import { GLConstants } from "./GLConstant";
-import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
+import { getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
 // export class VertexIndex implements IVertexIndex
 // {
@@ -14,7 +14,7 @@ import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./
 //     // submit: Function;
 // }
 
-export function deduceVertexIndexArrayInfo(data: TArrayInfo): IVertexIndex
+function deduceVertexIndexArrayInfo(data: TArrayInfo): IVertexIndex
 {
     let newData: IVertexIndex = {} as IVertexIndex;
     newData.name = "indices";

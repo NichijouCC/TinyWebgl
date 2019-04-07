@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/main.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/Twebgl.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -1539,93 +1539,8 @@ function createIndexBufferInfo(gl, data) {
 }
 
 
-/***/ }),
-
-/***/ "./src/main.ts":
-/*!*********************!*\
-  !*** ./src/main.ts ***!
-  \*********************/
-/*! no exports provided */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Twebgl__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Twebgl */ "./src/Twebgl.ts");
-/* harmony import */ var _GeometryInfo__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GeometryInfo */ "./src/GeometryInfo.ts");
-/* harmony import */ var _ProgramInfo__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ProgramInfo */ "./src/ProgramInfo.ts");
-/* harmony import */ var _Texture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Texture */ "./src/Texture.ts");
-console.log("@@@@@@@@@@@@@");
-
-
-
-
-window.onload = function () {
-    var cc = document.getElementById("canvas");
-    var gl = Object(_Twebgl__WEBPACK_IMPORTED_MODULE_0__["initContext"])(cc, { extentions: ["OES_vertex_array_object"] });
-    var be2 = gl.beWebgl2;
-    var geometry = Object(_GeometryInfo__WEBPACK_IMPORTED_MODULE_1__["createGeometryInfoFromArray"])(gl, {
-        "a_pos": [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
-        "a_uv": [0, 1, 0, 0, 1, 0, 1, 1]
-    }, [0, 1, 2, 0, 3, 2]);
-    var def_error_vs = "\
-        attribute vec3 a_pos;\
-        void main()\
-        {\
-            highp vec4 tmplet_1=vec4(a_pos.xyz,1.0);\
-            gl_Position = tmplet_1;\
-        }";
-    var def_error_fs = "\
-        uniform highp vec4 _MainColor;\
-        void main()\
-        {\
-            gl_FragData[0] = _MainColor;\
-        }";
-    var uniforms = {};
-    uniforms["_MainColor"] = new Float32Array([0.5, 1, 0.5, 1]);
-    var bassporgram = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createBassProgramInfo"])(gl, def_error_vs, def_error_fs, "ssxx");
-    var program = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createProgramInfo"])(gl, { program: bassporgram, uniforms: uniforms });
-    var def_vs = "\
-        attribute vec3 a_pos;\
-        attribute vec2 a_uv;\
-        varying highp vec2 xlv_TEXCOORD0;   \
-        void main()\
-        {\
-            highp vec4 tmplet_1=vec4(a_pos.xyz,1.0);\
-            xlv_TEXCOORD0=a_uv;\
-            gl_Position = tmplet_1;\
-        }";
-    var def_fs = "\
-        uniform highp vec4 _MainColor;\
-        varying highp vec2 xlv_TEXCOORD0;   \
-        uniform sampler2D _MainTex;\
-        void main()\
-        {\
-            lowp vec4 tmplet_3= texture2D(_MainTex, xlv_TEXCOORD0);\
-            gl_FragData[0] = _MainColor*tmplet_3;\
-        }";
-    var imag = new Image();
-    imag.src = "./dist/tes.png";
-    imag.onload = function () {
-        uniforms["_MainTex"] = Object(_Texture__WEBPACK_IMPORTED_MODULE_3__["createTextureFromHtml"])(gl, imag);
-        program = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createProgramInfo"])(gl, { program: { vs: def_vs, fs: def_fs, name: "ssxxss" }, uniforms: uniforms });
-    };
-    var render = function () {
-        gl.clearColor(0.5, 0.1, 0.5, 1);
-        gl.clearDepth(0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        Object(_Twebgl__WEBPACK_IMPORTED_MODULE_0__["setProgram"])(gl, program);
-        Object(_Twebgl__WEBPACK_IMPORTED_MODULE_0__["setBuffersAndAttributes"])(gl, geometry, program);
-        Object(_Twebgl__WEBPACK_IMPORTED_MODULE_0__["drawBufferInfo"])(gl, geometry);
-        requestAnimationFrame(function () {
-            render();
-        });
-    };
-    render();
-};
-
-
 /***/ })
 
 /******/ });
 });
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=Twebgl.js.map

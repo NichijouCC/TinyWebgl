@@ -1,6 +1,6 @@
-import { IVertexAttrib, TypedArray, TArrayInfo, IArrayInfo } from "./type";
+import { IVertexAttrib, TypedArray, TArrayInfo } from "./type";
 import { GLConstants } from "./GLConstant";
-import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
+import { getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
 // export class VertexAtt implements IVertexAttrib
 // {
@@ -17,7 +17,7 @@ import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./
 //     drawType: number;
 // }
 
-export function deduceVertexAttArrayInfo(attName: string, data: TArrayInfo): IVertexAttrib
+function deduceVertexAttArrayInfo(attName: string, data: TArrayInfo): IVertexAttrib
 {
     let newData = {} as IVertexAttrib;
     newData.name = attName;

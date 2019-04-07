@@ -1,5 +1,5 @@
 console.log("@@@@@@@@@@@@@");
-import { initContext, setBuffersAndAttributes, drawBufferInfo, setProgram } from "gl";
+import { initContext, setBuffersAndAttributes, drawBufferInfo, setProgram } from "./Twebgl";
 import { createGeometryInfoFromArray } from "./GeometryInfo";
 import { createBassProgramInfo, createProgramInfo } from "./ProgramInfo";
 import { createTextureFromHtml } from "./Texture";
