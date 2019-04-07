@@ -1,4 +1,4 @@
-import { IVertexIndex, TypedArray, TArrayInfo, IArrayInfo } from "./type/type";
+import { IVertexIndex, TypedArray, TArrayInfo, IArrayInfo } from "./type";
 import { GLConstants } from "./GLConstant";
 import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
@@ -16,7 +16,8 @@ import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./
 
 export function deduceVertexIndexArrayInfo(data: TArrayInfo): IVertexIndex
 {
-    let newData: IArrayInfo = {};
+    let newData: IVertexIndex = {} as IVertexIndex;
+    newData.name = "indices";
     if (data instanceof Array)
     {
         newData.value = new Uint16Array(data);
@@ -36,27 +37,32 @@ export function deduceVertexIndexArrayInfo(data: TArrayInfo): IVertexIndex
         }
     }
 
-    //------------data is IarrayInfo now
-    let vertexData = newData as IVertexIndex;
-    vertexData.name = "indices";
-    if (newData.componentDataType == null)
+    let orginData = data as IVertexIndex;
+
+    if (orginData.componentDataType == null)
     {
-        vertexData.componentDataType = newData.value ? getGLTypeForTypedArray(newData.value as TypedArray) : GLConstants.UNSIGNED_SHORT;
+        newData.componentDataType = newData.value ? getGLTypeForTypedArray(newData.value as TypedArray) : GLConstants.UNSIGNED_SHORT;
     } else
     {
-        vertexData.componentDataType = newData.componentDataType;
+        newData.componentDataType = orginData.componentDataType;
     }
+    if (orginData.length == null)
+    {
+        newData.length = newData.value ? (newData.value as TypedArray).length : null;
+    } else
+    {
+        newData.length = orginData.length;
+    }
+    newData.drawType = orginData.drawType ? newData.drawType : GLConstants.STATIC_DRAW;
+
+
     if (newData.length == null)
     {
-        vertexData.length = newData.value ? (newData.value as TypedArray).length : null;
-    } else
-    {
-        vertexData.length = newData.length;
+        throw "can not deduce geometry Indices length.";
     }
-    vertexData.drawType = newData.drawType ? newData.drawType : GLConstants.STATIC_DRAW;
 
     // vertexData.count = newData.indexCount ? newData.indexCount : vertexData.length;
-    return vertexData;
+    return newData;
 }
 
 export function createIndexBufferInfo(gl: WebGLRenderingContext, data: TArrayInfo): IVertexIndex

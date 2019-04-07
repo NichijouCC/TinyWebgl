@@ -580,6 +580,7 @@ var GLConstants;
     GLConstants[GLConstants["FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"] = 36182] = "FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
     GLConstants[GLConstants["MAX_SAMPLES"] = 36183] = "MAX_SAMPLES";
     GLConstants[GLConstants["HALF_FLOAT"] = 5131] = "HALF_FLOAT";
+    GLConstants[GLConstants["HALF_FLOAT_OES"] = 36193] = "HALF_FLOAT_OES";
     GLConstants[GLConstants["RG"] = 33319] = "RG";
     GLConstants[GLConstants["RG_INTEGER"] = 33320] = "RG_INTEGER";
     GLConstants[GLConstants["R8"] = 33321] = "R8";
@@ -704,22 +705,21 @@ var GeometryInfo = (function () {
     return GeometryInfo;
 }());
 
-function createGeometryInfoFromArray(gl, arrs) {
+function createGeometryInfoFromArray(gl, atts, indices, primitiveType) {
     var info = new GeometryInfo();
-    Object.keys(arrs).forEach(function (attName) {
-        var attInfo = arrs[attName];
-        if (attName == "indices") {
-            info.indices = Object(_VertexIndex__WEBPACK_IMPORTED_MODULE_0__["createIndexBufferInfo"])(gl, attInfo);
+    info.primitiveType = primitiveType ? primitiveType : gl.TRIANGLES;
+    if (indices != null) {
+        info.indices = Object(_VertexIndex__WEBPACK_IMPORTED_MODULE_0__["createIndexBufferInfo"])(gl, indices);
+        if (info.count == null) {
+            info.count = info.indices.length;
         }
-        else if (attName == "draw") {
-            var data = attInfo;
-            info.count = data.count;
-            info.offset = data.offset;
+    }
+    for (var attName in atts) {
+        info.atts[attName] = Object(_VertexAttribute__WEBPACK_IMPORTED_MODULE_1__["createAttributeBufferInfo"])(gl, attName, atts[attName]);
+        if (info.count == null) {
+            info.count = info.atts[attName].length;
         }
-        else {
-            info.atts[attName] = Object(_VertexAttribute__WEBPACK_IMPORTED_MODULE_1__["createAttributeBufferInfo"])(gl, attName, attInfo);
-        }
-    });
+    }
     return info;
 }
 
@@ -730,13 +730,14 @@ function createGeometryInfoFromArray(gl, arrs) {
 /*!***********************!*\
   !*** ./src/Helper.ts ***!
   \***********************/
-/*! exports provided: getGLTypeForTypedArray, getArrayTypeForGLtype, getTypedArray */
+/*! exports provided: getGLTypeForTypedArray, getArrayTypeForGLtype, getbytesForGLtype, getTypedArray */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getGLTypeForTypedArray", function() { return getGLTypeForTypedArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getArrayTypeForGLtype", function() { return getArrayTypeForGLtype; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getbytesForGLtype", function() { return getbytesForGLtype; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTypedArray", function() { return getTypedArray; });
 /* harmony import */ var _GLConstant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GLConstant */ "./src/GLConstant.ts");
 
@@ -794,6 +795,22 @@ function getArrayTypeForGLtype(glType) {
     }
     throw "unsupported gltype to array type";
 }
+function getbytesForGLtype(glType) {
+    switch (glType) {
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].BYTE: return 1;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_BYTE: return 1;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].SHORT: return 2;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_SHORT_4_4_4_4: return 2;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_SHORT: return 2;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].INT: return 4;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_INT: return 4;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].HALF_FLOAT: return 2;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].HALF_FLOAT_OES: return 2;
+        case _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].FLOAT: return 4;
+        default:
+            throw "unsupported gltype to bytesPerElement";
+    }
+}
 function getTypedArray(data, gltype) {
     var type = typeof data;
     if (type == "number") {
@@ -814,14 +831,14 @@ function getTypedArray(data, gltype) {
 /*!****************************!*\
   !*** ./src/ProgramInfo.ts ***!
   \****************************/
-/*! exports provided: ShaderTypeEnum, setUniforms, createProgramInfo, getAttributesInfo, getUniformsInfo, createShader, getUniformSetter, getAttributeSetter */
+/*! exports provided: ShaderTypeEnum, createProgramInfo, createBassProgramInfo, getAttributesInfo, getUniformsInfo, createShader, getUniformSetter, getAttributeSetter */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderTypeEnum", function() { return ShaderTypeEnum; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setUniforms", function() { return setUniforms; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createProgramInfo", function() { return createProgramInfo; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createBassProgramInfo", function() { return createBassProgramInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getAttributesInfo", function() { return getAttributesInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getUniformsInfo", function() { return getUniformsInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createShader", function() { return createShader; });
@@ -834,14 +851,29 @@ var ShaderTypeEnum;
     ShaderTypeEnum[ShaderTypeEnum["VS"] = 0] = "VS";
     ShaderTypeEnum[ShaderTypeEnum["FS"] = 1] = "FS";
 })(ShaderTypeEnum || (ShaderTypeEnum = {}));
-function setUniforms(info, uniforms) {
-    uniforms.forEach(function (element) {
-        var setter = info.uniformsDic[element].setter;
-        var value = uniforms[element];
-        setter(value);
-    });
+function createProgramInfo(gl, op) {
+    var info;
+    if (op.program.program != null) {
+        var bassprogram = op.program;
+        info = {};
+        info.program = bassprogram.program;
+        info.attsDic = bassprogram.attsDic;
+        info.uniformsDic = bassprogram.uniformsDic;
+    }
+    else {
+        var bassprogramOp = op.program;
+        ;
+        info = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name);
+    }
+    if (op.uniforms) {
+        info.uniforms = op.uniforms;
+    }
+    if (op.states) {
+        info.states = op.states;
+    }
+    return info;
 }
-function createProgramInfo(gl, vs, fs, name) {
+function createBassProgramInfo(gl, vs, fs, name) {
     var vsShader = createShader(gl, ShaderTypeEnum.VS, vs, name + "_vs");
     var fsShader = createShader(gl, ShaderTypeEnum.FS, fs, name + "_fs");
     if (vsShader && fsShader) {
@@ -880,6 +912,7 @@ function getAttributesInfo(gl, program) {
 function getUniformsInfo(gl, program) {
     var uniformDic = {};
     var numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    gl["bindpoint"] = 0;
     for (var i = 0; i < numUniforms; i++) {
         var uniformInfo = gl.getActiveUniform(program, i);
         if (!uniformInfo)
@@ -893,7 +926,8 @@ function getUniformsInfo(gl, program) {
         }
         if (location_1 == null)
             continue;
-        var func = getUniformSetter(gl, type, beArray, location_1);
+        var bindpoint = gl["bindpoint"];
+        var func = getUniformSetter(gl, type, beArray, location_1, bindpoint);
         uniformDic[name_1] = { name: name_1, location: location_1, type: type, setter: func };
     }
     return uniformDic;
@@ -916,7 +950,7 @@ function createShader(gl, type, source, name) {
         return { shaderType: type, shaderName: name, shader: item };
     }
 }
-function getUniformSetter(gl, uniformType, beArray, location) {
+function getUniformSetter(gl, uniformType, beArray, location, bindpoint) {
     switch (uniformType) {
         case gl.FLOAT:
             if (beArray) {
@@ -990,6 +1024,13 @@ function getUniformSetter(gl, uniformType, beArray, location) {
                 gl.uniformMatrix4fv(location, false, value);
             };
             break;
+        case gl.SAMPLER_2D:
+            return function (value) {
+                gl.activeTexture(gl.TEXTURE0 + bindpoint);
+                gl.bindTexture(gl.TEXTURE_2D, value);
+                gl.uniform1i(location, bindpoint);
+                gl["bindpoint"] = gl["bindpoint"] + 1;
+            };
         default:
             console.error("uniformSetter not handle type:" + uniformType + " yet!");
             break;
@@ -1000,7 +1041,203 @@ function getAttributeSetter(gl, location) {
         gl.bindBuffer(gl.ARRAY_BUFFER, value.buffer);
         gl.enableVertexAttribArray(location);
         gl.vertexAttribPointer(location, value.componentSize, value.componentDataType, value.normalize, value.strideInBytes, value.offsetInBytes);
+        if (value.divisor !== undefined) {
+            gl.vertexAttribDivisor(location, value.divisor);
+        }
     };
+}
+
+
+/***/ }),
+
+/***/ "./src/State.ts":
+/*!**********************!*\
+  !*** ./src/State.ts ***!
+  \**********************/
+/*! exports provided: setProgramState, deduceFullShderState */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setProgramState", function() { return setProgramState; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deduceFullShderState", function() { return deduceFullShderState; });
+/* harmony import */ var _GLConstant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GLConstant */ "./src/GLConstant.ts");
+
+function setProgramState(gl, state) {
+    if (state.beDeduce != true) {
+        deduceFullShderState(state);
+    }
+    if (state.enableCullFace) {
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(state.cullBack ? gl.BACK : gl.FRONT);
+    }
+    else {
+        gl.disable(gl.CULL_FACE);
+    }
+    gl.depthMask(state.depth_Write);
+    if (state.depth_Test) {
+        gl.enable(gl.DEPTH_TEST);
+    }
+    else {
+        gl.disable(gl.DEPTH_TEST);
+    }
+    if (state.enableBlend) {
+        gl.enable(gl.BLEND);
+        gl.blendEquation(state.blend_Equation);
+        gl.blendFunc(state.blend_Src, state.blend_Dst);
+    }
+    if (state.enableStencilTest) {
+        gl.enable(gl.STENCIL_TEST);
+        gl.stencilFunc(state.stencilFunc, state.stencil_refValue, state.stencil_Mask);
+        gl.stencilOp(state.stencil_Fail, state.stencil_PassZfail, state.stencil_FaileZpass);
+    }
+}
+function deduceFullShderState(state) {
+    if (state.enableCullFace == null) {
+        state.enableCullFace = true;
+    }
+    if (state.enableCullFace) {
+        if (state.cullBack == null) {
+            state.cullBack = true;
+        }
+    }
+    if (state.depth_Write == null) {
+        state.depth_Write = true;
+    }
+    if (state.depth_Test == null) {
+        state.depth_Test = true;
+    }
+    if (state.depth_Test) {
+        if (state.depth_TestFuc == null) {
+            state.depth_TestFuc = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].LEQUAL;
+        }
+    }
+    if (state.enableBlend == true) {
+        if (state.blend_Equation == null) {
+            state.blend_Equation = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].FUNC_ADD;
+        }
+        if (state.blend_Src == null) {
+            state.blend_Src = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].ONE;
+        }
+        if (state.blend_Dst == null) {
+            state.blend_Dst = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].ONE_MINUS_SRC_ALPHA;
+        }
+    }
+    if (state.enableStencilTest == true) {
+        if (state.stencilFunc == null) {
+            state.stencilFunc = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].ALWAYS;
+        }
+        if (state.stencil_Fail == null) {
+            state.stencil_Fail = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].KEEP;
+        }
+        if (state.stencil_FaileZpass == null) {
+            state.stencil_FaileZpass = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].KEEP;
+        }
+        if (state.stencil_PassZfail == null) {
+            state.stencil_PassZfail = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].REPLACE;
+        }
+        if (state.stencil_refValue == null) {
+            state.stencil_refValue = 1;
+        }
+        if (state.stencil_Mask == null) {
+            state.stencil_Mask = 0xFF;
+        }
+    }
+    return state;
+}
+
+
+/***/ }),
+
+/***/ "./src/Texture.ts":
+/*!************************!*\
+  !*** ./src/Texture.ts ***!
+  \************************/
+/*! exports provided: createTextureFromTypedArray, createTextureFromHtml, deduceTextureTypedArrayOption, deduceTextureHtmlOption */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTextureFromTypedArray", function() { return createTextureFromTypedArray; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTextureFromHtml", function() { return createTextureFromHtml; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deduceTextureTypedArrayOption", function() { return deduceTextureTypedArrayOption; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deduceTextureHtmlOption", function() { return deduceTextureHtmlOption; });
+/* harmony import */ var _GLConstant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GLConstant */ "./src/GLConstant.ts");
+/* harmony import */ var _Helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Helper */ "./src/Helper.ts");
+
+
+function createTextureFromTypedArray(gl, data, texOP) {
+    deduceTextureTypedArrayOption(gl, data, texOP);
+    var tex = gl.createTexture();
+    gl.bindTexture(texOP.target, tex);
+    gl.texParameteri(texOP.target, gl.TEXTURE_MAG_FILTER, texOP.filter_max);
+    gl.texParameteri(texOP.target, gl.TEXTURE_MIN_FILTER, texOP.filter_min);
+    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_S, texOP.wrap_s);
+    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_T, texOP.wrap_t);
+    gl.texImage2D(texOP.target, 0, texOP.pixelFormat, texOP.width, texOP.height, 0, texOP.pixelFormat, texOP.pixelDatatype, data);
+}
+function createTextureFromHtml(gl, data, texOP) {
+    texOP = texOP != null ? texOP : {};
+    deduceTextureHtmlOption(gl, data, texOP);
+    var tex = gl.createTexture();
+    gl.bindTexture(texOP.target, tex);
+    gl.texParameteri(texOP.target, gl.TEXTURE_MAG_FILTER, texOP.filter_max);
+    gl.texParameteri(texOP.target, gl.TEXTURE_MIN_FILTER, texOP.filter_min);
+    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_S, texOP.wrap_s);
+    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_T, texOP.wrap_t);
+    gl.texImage2D(texOP.target, 0, texOP.pixelFormat, texOP.pixelFormat, texOP.pixelDatatype, data);
+    return tex;
+}
+function dedeuceBaseTextureOption(gl, texOP) {
+    texOP.target = texOP.target ? texOP.target : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].TEXTURE_2D;
+    texOP.pixelFormat = texOP.pixelFormat ? texOP.pixelFormat : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].RGBA;
+    if (texOP.enableMipMap && canGenerateMipmap(gl, texOP.width, texOP.height)) {
+        texOP.enableMipMap = true;
+    }
+    else {
+        texOP.enableMipMap = false;
+    }
+    if (texOP.filter_max == null) {
+        texOP.filter_max = texOP.enableMipMap ? _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].LINEAR_MIPMAP_LINEAR : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].LINEAR;
+    }
+    if (texOP.filter_min == null) {
+        texOP.filter_min = texOP.enableMipMap ? _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].LINEAR_MIPMAP_LINEAR : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].LINEAR;
+    }
+    if (texOP.wrap_s == null) {
+        texOP.wrap_s = canWrap_reapeat(gl, texOP.width, texOP.height) ? _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].REPEAT : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].CLAMP_TO_EDGE;
+    }
+    if (texOP.wrap_t == null) {
+        texOP.wrap_t = canWrap_reapeat(gl, texOP.width, texOP.height) ? _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].REPEAT : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].CLAMP_TO_EDGE;
+    }
+}
+function deduceTextureTypedArrayOption(gl, data, texOP) {
+    dedeuceBaseTextureOption(gl, texOP);
+    if (texOP.pixelDatatype == null) {
+        texOP.pixelDatatype = Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getGLTypeForTypedArray"])(data);
+    }
+}
+function deduceTextureHtmlOption(gl, data, texOP) {
+    texOP.width = data.width;
+    texOP.height = data.height;
+    dedeuceBaseTextureOption(gl, texOP);
+    if (texOP.pixelDatatype == null) {
+        texOP.pixelDatatype = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_BYTE;
+    }
+}
+function isPowerOf2(value) {
+    return (value & (value - 1)) === 0;
+}
+function canGenerateMipmap(gl, width, height) {
+    if (!gl.beWebgl2) {
+        return isPowerOf2(width) && isPowerOf2(height);
+    }
+    return true;
+}
+function canWrap_reapeat(gl, width, height) {
+    if (!gl.beWebgl2) {
+        return isPowerOf2(width) && isPowerOf2(height);
+    }
+    return true;
 }
 
 
@@ -1010,72 +1247,65 @@ function getAttributeSetter(gl, location) {
 /*!********************************!*\
   !*** ./src/VertexAttribute.ts ***!
   \********************************/
-/*! exports provided: VertexAtt, createAttributeBufferInfo */
+/*! exports provided: deduceVertexAttArrayInfo, createAttributeBufferInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VertexAtt", function() { return VertexAtt; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deduceVertexAttArrayInfo", function() { return deduceVertexAttArrayInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createAttributeBufferInfo", function() { return createAttributeBufferInfo; });
 /* harmony import */ var _GLConstant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GLConstant */ "./src/GLConstant.ts");
 /* harmony import */ var _Helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Helper */ "./src/Helper.ts");
 
 
-var VertexAtt = (function () {
-    function VertexAtt() {
+function deduceVertexAttArrayInfo(attName, data) {
+    var newData = {};
+    newData.name = attName;
+    if (data instanceof Array) {
+        newData.value = new Float32Array(data);
     }
-    return VertexAtt;
-}());
-
-function createAttributeBufferInfo(gl, attName, data) {
-    var info = new VertexAtt();
-    info.name = attName;
-    if (data["value"] || data["buffer"]) {
-        var realdata = data;
-        info.componentDataType = realdata.componentDataType ? realdata.componentDataType : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].FLOAT;
-        info.componentSize = realdata.componentSize ? realdata.componentSize : guessNumComponentsFromName(attName);
-        if (realdata.normalize != null) {
-            info.normalize = realdata.normalize;
-        }
-        else {
-            info.normalize = false;
-        }
-        info.offsetInBytes = realdata.offsetInBytes ? realdata.offsetInBytes : 0;
-        info.strideInBytes = realdata.strideInBytes ? realdata.strideInBytes : 0;
-        info.drawType = realdata.drawType ? realdata.drawType : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].STATIC_DRAW;
-        if (realdata.buffer != null) {
-            info.buffer = realdata.buffer;
-        }
-        else {
-            if (realdata.value != null && realdata.value instanceof Array) {
-                info.value = Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getTypedArray"])(realdata.value, info.componentDataType);
-            }
-            else {
-                info.value = realdata.value;
-            }
-        }
+    else if (ArrayBuffer.isView(data)) {
+        newData.value = data;
     }
     else {
-        info.componentDataType = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].FLOAT;
-        info.componentSize = guessNumComponentsFromName(attName);
-        info.normalize = false;
-        info.offsetInBytes = 0;
-        info.strideInBytes = 0;
-        info.drawType = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].STATIC_DRAW;
-        if (data instanceof Array) {
-            info.value = Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getTypedArray"])(data, info.componentDataType);
+        var arraydata = data.value;
+        if (arraydata instanceof Array) {
+            var type = data.componentDataType ? Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getArrayTypeForGLtype"])(data.componentDataType) : Float32Array;
+            newData.value = new type(arraydata);
         }
         else {
-            info.value = data;
+            newData.value = arraydata;
         }
     }
-    if (info.buffer == null) {
+    var orginData = data;
+    if (orginData.componentDataType == null) {
+        newData.componentDataType = newData.value ? Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getGLTypeForTypedArray"])(newData.value) : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].FLOAT;
+    }
+    else {
+        newData.componentDataType = orginData.componentDataType;
+    }
+    if (orginData.length == null) {
+        newData.length = newData.value ? newData.value.length : null;
+    }
+    else {
+        newData.length = orginData.length;
+    }
+    newData.componentSize = orginData.componentSize ? orginData.componentSize : guessNumComponentsFromName(attName);
+    newData.normalize = orginData.normalize != null ? orginData.normalize : false;
+    newData.offsetInBytes = orginData.offsetInBytes ? orginData.offsetInBytes : 0;
+    newData.strideInBytes = orginData.strideInBytes ? orginData.strideInBytes : 0;
+    newData.drawType = orginData.drawType ? orginData.drawType : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].STATIC_DRAW;
+    return newData;
+}
+function createAttributeBufferInfo(gl, attName, data) {
+    var vertexdata = deduceVertexAttArrayInfo(attName, data);
+    if (vertexdata.buffer == null) {
         var buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, info.value, info.drawType);
-        info.buffer = buffer;
+        gl.bufferData(gl.ARRAY_BUFFER, vertexdata.value, vertexdata.drawType);
+        vertexdata.buffer = buffer;
     }
-    return info;
+    return vertexdata;
 }
 var uvRE = /uv/;
 var colorRE = /color/;
@@ -1101,69 +1331,64 @@ function guessNumComponentsFromName(name, length) {
 /*!****************************!*\
   !*** ./src/VertexIndex.ts ***!
   \****************************/
-/*! exports provided: VertexIndex, createIndexBufferInfo */
+/*! exports provided: deduceVertexIndexArrayInfo, createIndexBufferInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VertexIndex", function() { return VertexIndex; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deduceVertexIndexArrayInfo", function() { return deduceVertexIndexArrayInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createIndexBufferInfo", function() { return createIndexBufferInfo; });
 /* harmony import */ var _GLConstant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GLConstant */ "./src/GLConstant.ts");
 /* harmony import */ var _Helper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Helper */ "./src/Helper.ts");
 
 
-var VertexIndex = (function () {
-    function VertexIndex() {
+function deduceVertexIndexArrayInfo(data) {
+    var newData = {};
+    newData.name = "indices";
+    if (data instanceof Array) {
+        newData.value = new Uint16Array(data);
     }
-    return VertexIndex;
-}());
-
-function createIndexBufferInfo(gl, data) {
-    var info = new VertexIndex();
-    if (data["value"] || data["buffer"]) {
-        var realdata = data;
-        info.componentDataType = realdata.componentDataType ? realdata.componentDataType : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_SHORT;
-        if (realdata.buffer != null) {
-            info.count = realdata.indexCount;
-            if (realdata.indexCount == null) {
-                console.error("indexCount is need when value if data.value is buffer");
-            }
-        }
-        else {
-            if (typeof realdata.value == "number") {
-                info.value = realdata.value;
-                info.count = realdata;
-            }
-            else {
-                if (realdata.value instanceof Array) {
-                    info.value = Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getTypedArray"])(realdata.value, info.componentDataType);
-                }
-                info.count = info.value.length;
-            }
-        }
-        info.drawType = realdata.drawType ? realdata.drawType : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].STATIC_DRAW;
+    else if (ArrayBuffer.isView(data)) {
+        newData.value = data;
     }
     else {
-        info.componentDataType = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_SHORT;
-        info.drawType = _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].STATIC_DRAW;
-        if (typeof data == "number") {
-            info.value = data;
-            info.count = data;
+        var arraydata = data.value;
+        if (arraydata instanceof Array) {
+            var type = data.componentDataType ? Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getArrayTypeForGLtype"])(data.componentDataType) : Uint16Array;
+            newData.value = new type(arraydata);
         }
         else {
-            if (data instanceof Array) {
-                info.value = Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getTypedArray"])(data, info.componentDataType);
-            }
-            info.count = info.value.length;
+            newData.value = arraydata;
         }
     }
-    if (info.buffer == null) {
+    var orginData = data;
+    if (orginData.componentDataType == null) {
+        newData.componentDataType = newData.value ? Object(_Helper__WEBPACK_IMPORTED_MODULE_1__["getGLTypeForTypedArray"])(newData.value) : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].UNSIGNED_SHORT;
+    }
+    else {
+        newData.componentDataType = orginData.componentDataType;
+    }
+    if (orginData.length == null) {
+        newData.length = newData.value ? newData.value.length : null;
+    }
+    else {
+        newData.length = orginData.length;
+    }
+    newData.drawType = orginData.drawType ? newData.drawType : _GLConstant__WEBPACK_IMPORTED_MODULE_0__["GLConstants"].STATIC_DRAW;
+    if (newData.length == null) {
+        throw "can not deduce geometry Indices length.";
+    }
+    return newData;
+}
+function createIndexBufferInfo(gl, data) {
+    var vertexdata = deduceVertexIndexArrayInfo(data);
+    if (vertexdata.buffer == null) {
         var buffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, info.value, info.drawType);
-        info.buffer = buffer;
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, vertexdata.value, vertexdata.drawType);
+        vertexdata.buffer = buffer;
     }
-    return info;
+    return vertexdata;
 }
 
 
@@ -1173,14 +1398,18 @@ function createIndexBufferInfo(gl, data) {
 /*!*******************!*\
   !*** ./src/gl.ts ***!
   \*******************/
-/*! exports provided: initContext, setBuffersAndAttributes, drawBufferInfo */
+/*! exports provided: initContext, setBuffersAndAttributes, setProgram, setProgramUniforms, drawBufferInfo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "initContext", function() { return initContext; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setBuffersAndAttributes", function() { return setBuffersAndAttributes; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setProgram", function() { return setProgram; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setProgramUniforms", function() { return setProgramUniforms; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "drawBufferInfo", function() { return drawBufferInfo; });
+/* harmony import */ var _State__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./State */ "./src/State.ts");
+
 WebGLRenderingContext.prototype.addExtension = function (extname) {
     var ext = this.getExtension(extname);
     if (ext) {
@@ -1196,11 +1425,21 @@ WebGLRenderingContext.prototype.addExtension = function (extname) {
         }
     }
 };
+WebGLRenderingContext.prototype.__defineGetter__("beWebgl2", function () {
+    if (this._bewebgl2 == null) {
+        var version = this.getParameter(this.VERSION);
+        this._bewebgl2 = version.indexOf("WebGL 2.0") === 0;
+        return this._bewebgl2;
+    }
+    return this._bewebgl2;
+});
+WebGLRenderingContext.prototype.__defineSetter__("beWebgl2", function (val) {
+    this._bewebgl2 = val;
+});
 function initContext(canvas, options) {
     if (options === void 0) { options = {}; }
     var type = options.context || "webgl";
     var gl = canvas.getContext(type, options.contextAtts);
-    gl.beWebgl2 = (type == "webgl2");
     if (options.extentions != null) {
         options.extentions.forEach(function (ext) {
             gl.addExtension(ext);
@@ -1216,12 +1455,28 @@ function setBuffersAndAttributes(gl, geometry, program) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.buffer);
     }
 }
+function setProgram(gl, program) {
+    gl.useProgram(program.program);
+    if (program.uniforms) {
+        setProgramUniforms(program, program.uniforms);
+    }
+    if (program.states) {
+        Object(_State__WEBPACK_IMPORTED_MODULE_0__["setProgramState"])(gl, program.states);
+    }
+}
+function setProgramUniforms(info, uniforms) {
+    for (var key in uniforms) {
+        var setter = info.uniformsDic[key].setter;
+        var value = uniforms[key];
+        setter(value);
+    }
+}
 function drawBufferInfo(gl, geometry, instanceCount) {
     if (geometry.indices != null) {
-        gl.drawElements(geometry.mode, geometry.count || geometry.indices.count, geometry.indices.componentDataType, geometry.offset);
+        gl.drawElements(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0);
     }
     else {
-        gl.drawArrays(geometry.mode, geometry.offset || 0, geometry.count);
+        gl.drawArrays(geometry.primitiveType, geometry.offset || 0, geometry.count);
     }
 }
 
@@ -1240,17 +1495,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var gl__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! gl */ "./src/gl.ts");
 /* harmony import */ var _GeometryInfo__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GeometryInfo */ "./src/GeometryInfo.ts");
 /* harmony import */ var _ProgramInfo__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ProgramInfo */ "./src/ProgramInfo.ts");
+/* harmony import */ var _Texture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Texture */ "./src/Texture.ts");
 console.log("@@@@@@@@@@@@@");
+
 
 
 
 window.onload = function () {
     var cc = document.getElementById("canvas");
     var gl = Object(gl__WEBPACK_IMPORTED_MODULE_0__["initContext"])(cc, { extentions: ["OES_vertex_array_object"] });
+    var be2 = gl.beWebgl2;
     var geometry = Object(_GeometryInfo__WEBPACK_IMPORTED_MODULE_1__["createGeometryInfoFromArray"])(gl, {
-        "a_pos": [-0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
-        "indices": [0, 1, 2, 0, 3, 2]
-    });
+        "a_pos": [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
+        "a_uv": [0, 1, 0, 0, 1, 0, 1, 1]
+    }, [0, 1, 2, 0, 3, 2]);
     var def_error_vs = "\
         attribute vec3 a_pos;\
         void main()\
@@ -1259,13 +1517,45 @@ window.onload = function () {
             gl_Position = tmplet_1;\
         }";
     var def_error_fs = "\
+        uniform highp vec4 _MainColor;\
         void main()\
         {\
-            gl_FragData[0] = vec4(1,0,0,1);\
+            gl_FragData[0] = _MainColor;\
         }";
-    var program = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createProgramInfo"])(gl, def_error_vs, def_error_fs, "def_error");
+    var uniforms = {};
+    uniforms["_MainColor"] = new Float32Array([0.5, 1, 0.5, 1]);
+    var bassporgram = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createBassProgramInfo"])(gl, def_error_vs, def_error_fs, "ssxx");
+    var program = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createProgramInfo"])(gl, { program: bassporgram, uniforms: uniforms });
+    var def_vs = "\
+        attribute vec3 a_pos;\
+        attribute vec2 a_uv;\
+        varying highp vec2 xlv_TEXCOORD0;   \
+        void main()\
+        {\
+            highp vec4 tmplet_1=vec4(a_pos.xyz,1.0);\
+            xlv_TEXCOORD0=a_uv;\
+            gl_Position = tmplet_1;\
+        }";
+    var def_fs = "\
+        uniform highp vec4 _MainColor;\
+        varying highp vec2 xlv_TEXCOORD0;   \
+        uniform sampler2D _MainTex;\
+        void main()\
+        {\
+            lowp vec4 tmplet_3= texture2D(_MainTex, xlv_TEXCOORD0);\
+            gl_FragData[0] = _MainColor*tmplet_3;\
+        }";
+    var imag = new Image();
+    imag.src = "./dist/tes.png";
+    imag.onload = function () {
+        uniforms["_MainTex"] = Object(_Texture__WEBPACK_IMPORTED_MODULE_3__["createTextureFromHtml"])(gl, imag);
+        program = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createProgramInfo"])(gl, { program: { vs: def_vs, fs: def_fs, name: "ssxxss" }, uniforms: uniforms });
+    };
     var render = function () {
-        gl.useProgram(program.program);
+        gl.clearColor(0.5, 0.1, 0.5, 1);
+        gl.clearDepth(0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        Object(gl__WEBPACK_IMPORTED_MODULE_0__["setProgram"])(gl, program);
         Object(gl__WEBPACK_IMPORTED_MODULE_0__["setBuffersAndAttributes"])(gl, geometry, program);
         Object(gl__WEBPACK_IMPORTED_MODULE_0__["drawBufferInfo"])(gl, geometry);
         requestAnimationFrame(function () {

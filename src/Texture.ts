@@ -1,6 +1,6 @@
 import { GLConstants } from "./GLConstant";
 import { getGLTypeForTypedArray } from "./Helper";
-import { ITextureInfo, ITexViewDataInfo, ITexHtmlDataInfo } from "./type/type";
+import { ITextureInfo, ITexViewDataInfo, ITexHtmlDataInfo } from "./type";
 
 
 export function createTextureFromTypedArray(gl: WebGLRenderingContext, data: ArrayBufferView, texOP: ITexViewDataInfo)

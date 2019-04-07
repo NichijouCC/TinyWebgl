@@ -1,7 +1,7 @@
 console.log("@@@@@@@@@@@@@");
-import { initContext, setBuffersAndAttributes, drawBufferInfo } from "gl";
+import { initContext, setBuffersAndAttributes, drawBufferInfo, setProgram } from "gl";
 import { createGeometryInfoFromArray } from "./GeometryInfo";
-import { createBassProgramInfo, createProgramInfo, activeProgram } from "./ProgramInfo";
+import { createBassProgramInfo, createProgramInfo } from "./ProgramInfo";
 import { createTextureFromHtml } from "./Texture";
 
 
@@ -37,9 +37,9 @@ window.onload = () =>
 
     let uniforms: { [key: string]: any } = {};
     uniforms["_MainColor"] = new Float32Array([0.5, 1, 0.5, 1]);
+    let bassporgram = createBassProgramInfo(gl, def_error_vs, def_error_fs, "ssxx");
 
-
-    let program = createProgramInfo(gl, { vs: def_error_vs, fs: def_error_fs, name: "ssxx", uniforms: uniforms });
+    let program = createProgramInfo(gl, { program: bassporgram, uniforms: uniforms });
 
     let def_vs: string = "\
         attribute vec3 a_pos;\
@@ -67,8 +67,7 @@ window.onload = () =>
     imag.onload = () =>
     {
         uniforms["_MainTex"] = createTextureFromHtml(gl, imag);
-        let tex = createTextureFromHtml(gl, imag);
-        program = createProgramInfo(gl, { vs: def_vs, fs: def_fs, name: "ssxxss", uniforms: uniforms });
+        program = createProgramInfo(gl, { program: { vs: def_vs, fs: def_fs, name: "ssxxss" }, uniforms: uniforms });
     }
 
     let render = () =>
@@ -78,7 +77,7 @@ window.onload = () =>
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // gl.useProgram(program.program);
-        activeProgram(gl, program);
+        setProgram(gl, program);
         setBuffersAndAttributes(gl, geometry, program);
         drawBufferInfo(gl, geometry);
 

@@ -2,11 +2,17 @@
   "compilerOptions": {
     "module": "es6",
     "target": "es5",
-    "allowJs": true,
-    "declaration": false,
+    "allowJs": false,
+    "declaration": true,
+    "declarationDir": "./dist/",
     "sourceMap": true,
     "removeComments": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-  }
+  },
+  "exclude": [
+    "node_moudles",
+    "dist",
+    "test"
+  ]
 }

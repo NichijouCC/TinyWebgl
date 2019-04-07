@@ -1,4 +1,5 @@
-import { IcontextOptions, IGeometryInfo, IBassProgramInfo, IProgramState } from "./type/type";
+import { IcontextOptions, IGeometryInfo, IBassProgramInfo, IProgramState, IProgramInfo } from "./type";
+import { setProgramState } from "./State";
 
 declare global
 {
@@ -88,13 +89,45 @@ export function setBuffersAndAttributes(gl: WebGLRenderingContext, geometry: IGe
     }
 }
 
+
+/**
+ * bing program 、set uniforms 、set webgl states
+ * @param gl 
+ * @param program 
+ */
+export function setProgram(gl: WebGLRenderingContext, program: IProgramInfo)
+{
+    gl.useProgram(program.program);
+
+    if (program.uniforms)
+    {
+        setProgramUniforms(program, program.uniforms);
+    }
+    if (program.states)
+    {
+        setProgramState(gl, program.states);
+    }
+}
+
+
+export function setProgramUniforms(info: IBassProgramInfo, uniforms: { [name: string]: any })
+{
+    for (let key in uniforms)
+    {
+        let setter = info.uniformsDic[key].setter;
+        let value = uniforms[key];
+        setter(value);
+    }
+}
+
+
 export function drawBufferInfo(gl: WebGLRenderingContext, geometry: IGeometryInfo, instanceCount?: number): void
 {
     if (geometry.indices != null)
     {
-        gl.drawElements(geometry.mode, geometry.count, geometry.indices.componentDataType, geometry.offset);
+        gl.drawElements(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0);
     } else
     {
-        gl.drawArrays(geometry.mode, geometry.offset, geometry.count);
+        gl.drawArrays(geometry.primitiveType, geometry.offset || 0, geometry.count);
     }
 }

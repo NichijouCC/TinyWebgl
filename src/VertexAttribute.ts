@@ -1,4 +1,4 @@
-import { IVertexAttrib, TypedArray, TArrayInfo, IArrayInfo } from "./type/type";
+import { IVertexAttrib, TypedArray, TArrayInfo, IArrayInfo } from "./type";
 import { GLConstants } from "./GLConstant";
 import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
@@ -19,7 +19,9 @@ import { getTypedArray, getGLTypeForTypedArray, getArrayTypeForGLtype } from "./
 
 export function deduceVertexAttArrayInfo(attName: string, data: TArrayInfo): IVertexAttrib
 {
-    let newData: IArrayInfo = {};
+    let newData = {} as IVertexAttrib;
+    newData.name = attName;
+
     if (data instanceof Array)
     {
         newData.value = new Float32Array(data);
@@ -39,31 +41,29 @@ export function deduceVertexAttArrayInfo(attName: string, data: TArrayInfo): IVe
         }
     }
 
-    //------------data is IarrayInfo now
-    let vertexData = newData as IVertexAttrib;
-    vertexData.name = attName;
+    let orginData = data as IVertexAttrib;
 
-    if (newData.componentDataType == null)
+    if (orginData.componentDataType == null)
     {
-        vertexData.componentDataType = newData.value ? getGLTypeForTypedArray(newData.value as TypedArray) : GLConstants.FLOAT;
+        newData.componentDataType = newData.value ? getGLTypeForTypedArray(newData.value as TypedArray) : GLConstants.FLOAT;
     } else
     {
-        vertexData.componentDataType = newData.componentDataType;
+        newData.componentDataType = orginData.componentDataType;
     }
-    if (newData.length == null)
+    if (orginData.length == null)
     {
-        vertexData.length = newData.value ? (newData.value as TypedArray).length : null;
+        newData.length = newData.value ? (newData.value as TypedArray).length : null;
     } else
     {
-        vertexData.length = newData.length;
+        newData.length = orginData.length;
     }
-    vertexData.componentSize = newData.componentSize ? newData.componentSize : guessNumComponentsFromName(attName);
-    vertexData.normalize = newData.normalize != null ? newData.normalize : false;
-    vertexData.offsetInBytes = newData.offsetInBytes ? newData.offsetInBytes : 0;
-    vertexData.strideInBytes = newData.strideInBytes ? newData.strideInBytes : 0;
-    vertexData.drawType = newData.drawType ? newData.drawType : GLConstants.STATIC_DRAW;
+    newData.componentSize = orginData.componentSize ? orginData.componentSize : guessNumComponentsFromName(attName);
+    newData.normalize = orginData.normalize != null ? orginData.normalize : false;
+    newData.offsetInBytes = orginData.offsetInBytes ? orginData.offsetInBytes : 0;
+    newData.strideInBytes = orginData.strideInBytes ? orginData.strideInBytes : 0;
+    newData.drawType = orginData.drawType ? orginData.drawType : GLConstants.STATIC_DRAW;
 
-    return vertexData;
+    return newData;
 }
 
 export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: TArrayInfo): IVertexAttrib

@@ -1,32 +1,24 @@
-import { IVertexAttrib, IVertexIndex, TypedArray, IGeometryInfo, IDrawInfo, TArrayInfo } from "./type/type";
+import { IVertexAttrib, IVertexIndex, TypedArray, IGeometryInfo, IDrawInfo, TArrayInfo } from "./type";
 import { createIndexBufferInfo } from "./VertexIndex";
 import { createAttributeBufferInfo } from "./VertexAttribute";
 
 export class GeometryInfo implements IGeometryInfo
 {
+    primitiveType: number;
     atts: { [attName: string]: IVertexAttrib } = {};
     indices?: IVertexIndex;
 
-    mode: number;
+    // mode: number;
     count: number;
     offset: number;
 }
 
 
-export function createGeometryInfoFromArray(gl: WebGLRenderingContext, atts: { [keyName: string]: TArrayInfo }, indices?: TArrayInfo, draw?: IDrawInfo): IGeometryInfo
+export function createGeometryInfoFromArray(gl: WebGLRenderingContext, atts: { [keyName: string]: TArrayInfo }, indices?: TArrayInfo, primitiveType?: number): IGeometryInfo
 {
     let info = new GeometryInfo();
+    info.primitiveType = primitiveType ? primitiveType : gl.TRIANGLES;
 
-    if (draw != null)
-    {
-        info.mode = draw.mode || gl.TRIANGLES;
-        info.count = draw.count;
-        info.offset = draw.offset || 0;
-    } else
-    {
-        info.mode = gl.TRIANGLES;
-        info.offset = 0;
-    }
     if (indices != null)
     {
         info.indices = createIndexBufferInfo(gl, indices);

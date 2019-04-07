@@ -44,8 +44,8 @@ export interface IArrayInfo
     offsetInBytes?: number;
     divisor?: number;
 
-    indexCount?: number;
-    indexOffset?: number;
+    // indexCount?: number;
+    // indexOffset?: number;
 }
 /**
  * 顶点属性信息
@@ -100,7 +100,7 @@ export interface IGeometryInfo
     indices?: IVertexIndex;
     count: number;
     offset: number;
-    mode: number;
+    primitiveType: number;
 }
 /**
  * shaderProgram 的uniform info
@@ -275,11 +275,29 @@ export interface IProgramState
     colorMask?: [];
 }
 
-export interface IFullProgramInfo extends IBassProgramInfo
+export interface IProgramInfo extends IBassProgramInfo
 {
+    uniforms?: { [name: string]: any };
     states?: IProgramState;
-    uniforms: { [uniformName: string]: any };
 }
+
+// export interface IFullProgramInfo extends IBassProgramInfo
+// {
+//     states?: IProgramState;
+//     uniforms: { [uniformName: string]: any };
+// }
+
+export interface IProgramInfoOptions
+{
+    program: IBassProgramInfo | {
+        vs: string;
+        fs: string;
+        name: string;
+    };
+    uniforms?: { [name: string]: any };
+    states?: IProgramState;
+}
+
 
 
 //---------------pixstore-------------------global state

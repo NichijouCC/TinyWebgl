@@ -1,4 +1,4 @@
-import { IProgramState } from "./type/type";
+import { IProgramState } from "./type";
 
 import { GLConstants } from "./GLConstant";
 

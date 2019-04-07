@@ -1,56 +1,32 @@
 import { GLConstants } from "./GLConstant";
-import { IBassProgramInfo, IVertexAttrib, IAttributeInfo, IUniformInfo, IProgramState } from "./type/type";
-import { setProgramState } from "./State";
+import { IBassProgramInfo, IVertexAttrib, IAttributeInfo, IUniformInfo, IProgramInfoOptions, IProgramInfo } from "./type";
 
 export enum ShaderTypeEnum
 {
     VS,
     FS
 }
-export interface IProgramInfo extends IBassProgramInfo
-{
-    uniforms?: { [name: string]: any };
-    states?: IProgramState;
-}
-
-export function activeProgram(gl: WebGLRenderingContext, program: IProgramInfo)
-{
-    gl.useProgram(program.program);
-
-    if (program.uniforms)
-    {
-        setProgramUniforms(program, program.uniforms);
-    }
-    if (program.states)
-    {
-        setProgramState(gl, program.states);
-    }
-}
-
-
-export function setProgramUniforms(info: IBassProgramInfo, uniforms: { [name: string]: any })
-{
-    for (let key in uniforms)
-    {
-        let setter = info.uniformsDic[key].setter;
-        let value = uniforms[key];
-        setter(value);
-    }
-}
-
-export interface IProgramInfoOptions
-{
-    vs: string;
-    fs: string;
-    name: string;
-    uniforms?: { [name: string]: any };
-    states?: IProgramState;
-}
 
 
 export function createProgramInfo(gl: WebGLRenderingContext, op: IProgramInfoOptions): IProgramInfo
 {
-    let info = createBassProgramInfo(gl, op.vs, op.fs, op.name) as IProgramInfo;
+    let info: IProgramInfo;
+    if ((op.program as IBassProgramInfo).program != null)
+    {
+        let bassprogram = op.program as IBassProgramInfo;
+        info = {} as IProgramInfo;
+        info.program = bassprogram.program;
+        info.attsDic = bassprogram.attsDic;
+        info.uniformsDic = bassprogram.uniformsDic;
+    } else
+    {
+        let bassprogramOp = op.program as {
+            vs: string;
+            fs: string;
+            name: string;
+        };;
+        info = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name) as IProgramInfo;
+    }
     if (op.uniforms)
     {
         info.uniforms = op.uniforms;
