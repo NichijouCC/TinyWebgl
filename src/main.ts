@@ -3,6 +3,7 @@ import { initContext, setBuffersAndAttributes, drawBufferInfo, setProgram } from
 import { createGeometryInfoFromArray } from "./GeometryInfo";
 import { createBassProgramInfo, createProgramInfo } from "./ProgramInfo";
 import { createTextureFromHtml } from "./Texture";
+import { IProgramState } from "./type";
 
 
 
@@ -62,12 +63,13 @@ window.onload = () =>
             gl_FragData[0] = _MainColor*tmplet_3;\
         }";
 
+    let state: IProgramState = { depth_Test: false }
     let imag = new Image();
     imag.src = "./dist/tes.png";
     imag.onload = () =>
     {
         uniforms["_MainTex"] = createTextureFromHtml(gl, imag);
-        program = createProgramInfo(gl, { program: { vs: def_vs, fs: def_fs, name: "ssxxss" }, uniforms: uniforms });
+        program = createProgramInfo(gl, { program: { vs: def_vs, fs: def_fs, name: "ssxxss" }, uniforms: uniforms, states: state });
     }
 
     let render = () =>
