@@ -298,7 +298,11 @@ export interface IProgramInfoOptions
     states?: IProgramState;
 }
 
-
+export interface IObject
+{
+    geometry: IGeometryInfo;
+    program: IProgramInfo;
+}
 
 //---------------pixstore-------------------global state
 // preMultiply_alpha?: boolean;

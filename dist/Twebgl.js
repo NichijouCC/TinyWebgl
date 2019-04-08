@@ -1322,6 +1322,11 @@ WebGLRenderingContext.prototype.addExtension = function (extname) {
                 this.createVertexArray = ext.createVertexArrayOES.bind(ext);
                 this.deleteVertexArray = ext.deleteVertexArrayOES.bind(ext);
                 break;
+            case "ANGLE_instanced_arrays":
+                this.vertexAttribDivisor = ext.vertexAttribDivisorANGLE.bind(ext);
+                this.drawElementsInstanced = ext.drawElementsInstancedANGLE(ext);
+                this.drawArraysInstanced = ext.drawArraysInstancedANGLE(ext);
+                break;
             default:
                 console.warn("还未处理");
                 break;
@@ -1376,10 +1381,20 @@ function setProgramUniforms(info, uniforms) {
 }
 function drawBufferInfo(gl, geometry, instanceCount) {
     if (geometry.indices != null) {
-        gl.drawElements(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0);
+        if (instanceCount != null) {
+            gl.drawElementsInstanced(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0, instanceCount);
+        }
+        else {
+            gl.drawElements(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0);
+        }
     }
     else {
-        gl.drawArrays(geometry.primitiveType, geometry.offset || 0, geometry.count);
+        if (instanceCount != null) {
+            gl.drawArraysInstanced(geometry.primitiveType, geometry.offset || 0, geometry.count, instanceCount);
+        }
+        else {
+            gl.drawArrays(geometry.primitiveType, geometry.offset || 0, geometry.count);
+        }
     }
 }
 

@@ -1322,6 +1322,11 @@ WebGLRenderingContext.prototype.addExtension = function (extname) {
                 this.createVertexArray = ext.createVertexArrayOES.bind(ext);
                 this.deleteVertexArray = ext.deleteVertexArrayOES.bind(ext);
                 break;
+            case "ANGLE_instanced_arrays":
+                this.vertexAttribDivisor = ext.vertexAttribDivisorANGLE.bind(ext);
+                this.drawElementsInstanced = ext.drawElementsInstancedANGLE(ext);
+                this.drawArraysInstanced = ext.drawArraysInstancedANGLE(ext);
+                break;
             default:
                 console.warn("还未处理");
                 break;
@@ -1376,10 +1381,20 @@ function setProgramUniforms(info, uniforms) {
 }
 function drawBufferInfo(gl, geometry, instanceCount) {
     if (geometry.indices != null) {
-        gl.drawElements(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0);
+        if (instanceCount != null) {
+            gl.drawElementsInstanced(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0, instanceCount);
+        }
+        else {
+            gl.drawElements(geometry.primitiveType, geometry.count, geometry.indices.componentDataType, geometry.offset || 0);
+        }
     }
     else {
-        gl.drawArrays(geometry.primitiveType, geometry.offset || 0, geometry.count);
+        if (instanceCount != null) {
+            gl.drawArraysInstanced(geometry.primitiveType, geometry.offset || 0, geometry.count, instanceCount);
+        }
+        else {
+            gl.drawArrays(geometry.primitiveType, geometry.offset || 0, geometry.count);
+        }
     }
 }
 
@@ -1603,11 +1618,12 @@ window.onload = function () {
             lowp vec4 tmplet_3= texture2D(_MainTex, xlv_TEXCOORD0);\
             gl_FragData[0] = _MainColor*tmplet_3;\
         }";
+    var state = { depth_Test: false };
     var imag = new Image();
     imag.src = "./dist/tes.png";
     imag.onload = function () {
         uniforms["_MainTex"] = Object(_Texture__WEBPACK_IMPORTED_MODULE_3__["createTextureFromHtml"])(gl, imag);
-        program = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createProgramInfo"])(gl, { program: { vs: def_vs, fs: def_fs, name: "ssxxss" }, uniforms: uniforms });
+        program = Object(_ProgramInfo__WEBPACK_IMPORTED_MODULE_2__["createProgramInfo"])(gl, { program: { vs: def_vs, fs: def_fs, name: "ssxxss" }, uniforms: uniforms, states: state });
     };
     var render = function () {
         gl.clearColor(0.5, 0.1, 0.5, 1);
