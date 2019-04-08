@@ -62,7 +62,7 @@ function deduceVertexAttArrayInfo(attName: string, data: TArrayInfo): IVertexAtt
     newData.offsetInBytes = orginData.offsetInBytes ? orginData.offsetInBytes : 0;
     newData.strideInBytes = orginData.strideInBytes ? orginData.strideInBytes : 0;
     newData.drawType = orginData.drawType ? orginData.drawType : GLConstants.STATIC_DRAW;
-
+    newData.divisor = orginData.divisor;
     return newData;
 }
 

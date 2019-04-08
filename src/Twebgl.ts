@@ -37,8 +37,8 @@ WebGLRenderingContext.prototype.addExtension = function (extname: string)
                 break;
             case "ANGLE_instanced_arrays":
                 this.vertexAttribDivisor = ext.vertexAttribDivisorANGLE.bind(ext);
-                this.drawElementsInstanced = ext.drawElementsInstancedANGLE(ext);
-                this.drawArraysInstanced = ext.drawArraysInstancedANGLE(ext);
+                this.drawElementsInstanced = ext.drawElementsInstancedANGLE.bind(ext);
+                this.drawArraysInstanced = ext.drawArraysInstancedANGLE.bind(ext);
                 break;
 
             default:
