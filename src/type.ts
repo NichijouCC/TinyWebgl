@@ -1,26 +1,3 @@
-export interface WebGLVertexArrayObject extends WebGLObject {}
-
-export interface WebGLRenderingContext {
-  __defineSetter__(arg0: string, arg1: (val: any) => void): any
-  __defineGetter__(arg0: string, arg1: (val: any) => void): any
-  beWebgl2: boolean
-  bindpoint: number
-  addExtension(extName: string): void
-  createVertexArray(): any
-  bindVertexArray(vao?: WebGLVertexArrayObject | null): void
-  deleteVertexArray(vao: WebGLVertexArrayObject): void
-
-  vertexAttribDivisor(index: number, divisor: number): void
-  drawElementsInstanced(
-    mode: number,
-    count: number,
-    type: number,
-    offset: number,
-    instanceCount: number
-  ): void
-  drawArraysInstanced(mode: number, first: number, count: number, instanceCount: number): void
-}
-
 export type TypedArray =
   | Int8Array
   | Uint8Array
@@ -80,18 +57,18 @@ export interface IArrayInfo {
  */
 export interface IVertexAttrib {
   name: string
-  value?: ArrayBufferView
-  length?: number
+  viewBuffer?: ArrayBufferView
+  count?: number
 
-  buffer: WebGLBuffer
+  glBuffer: WebGLBuffer
   drawType: number
 
   componentSize: number
   componentDataType: number
   // size?: number;
   normalize: boolean
-  strideInBytes: number
-  offsetInBytes: number
+  bytesStride: number
+  bytesOffset: number
   divisor?: number
 }
 /**
@@ -107,12 +84,12 @@ export class IDrawInfo {
  */
 export interface IVertexIndex {
   name: string
-  value?: ArrayBufferView
-  length?: number
+  viewBuffer?: ArrayBufferView
+  count?: number
 
   componentDataType: number
 
-  buffer: WebGLBuffer
+  glBuffer: WebGLBuffer
   drawType?: number
 }
 /**
@@ -121,6 +98,7 @@ export interface IVertexIndex {
 export interface IGeometryInfo {
   atts: { [attName: string]: IVertexAttrib }
   indices?: IVertexIndex
+  vao?: WebGLVertexArrayObject
   count: number
   offset: number
   primitiveType: number

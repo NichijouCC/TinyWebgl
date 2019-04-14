@@ -248,15 +248,15 @@ export function getUniformSetter(
 
 export function getAttributeSetter(gl: WebGLRenderingContext, location: number) {
   return (value: IVertexAttrib) => {
-    gl.bindBuffer(gl.ARRAY_BUFFER, value.buffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, value.glBuffer)
     gl.enableVertexAttribArray(location)
     gl.vertexAttribPointer(
       location,
       value.componentSize,
       value.componentDataType,
       value.normalize,
-      value.strideInBytes,
-      value.offsetInBytes
+      value.bytesStride,
+      value.bytesOffset
     )
     if (value.divisor !== undefined) {
       gl.vertexAttribDivisor(location, value.divisor)

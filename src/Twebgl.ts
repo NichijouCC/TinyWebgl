@@ -1,11 +1,5 @@
-import {
-  IcontextOptions,
-  IGeometryInfo,
-  IBassProgramInfo,
-  IProgramState,
-  IProgramInfo
-} from './type'
-import { setProgramState } from './State'
+import { IcontextOptions, IGeometryInfo, IBassProgramInfo, IProgramInfo, IObject } from './type'
+import { setProgramState } from './state'
 
 WebGLRenderingContext.prototype.addExtension = function(extname: string) {
   let ext = this.getExtension(extname)
@@ -41,13 +35,12 @@ Object.defineProperty(WebGLRenderingContext.prototype, 'beWebgl2', {
   }
 })
 
-export function initContext(
+export function setUpWebgl(
   canvas: HTMLCanvasElement,
   options: IcontextOptions = {}
 ): WebGLRenderingContext {
   let type = options.context || 'webgl'
   let gl = canvas.getContext(type, options.contextAtts) as WebGLRenderingContext
-  // gl.beWebgl2 = (type == "webgl2");
   if (options.extentions != null) {
     options.extentions.forEach(ext => {
       gl.addExtension(ext)
@@ -71,7 +64,7 @@ export function setBuffersAndAttributes(
     program.attsDic[attName].setter(geometry.atts[attName])
   }
   if (geometry.indices) {
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.buffer)
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.glBuffer)
   }
 }
 
@@ -135,9 +128,38 @@ export function drawBufferInfo(
   }
 }
 
+export function drawObject(gl: WebGLRenderingContext, obj: IObject, instanceCount?: number) {
+  setProgram(gl, obj.program)
+  let beUseVao = obj.geometry.vao != null
+  if (beUseVao) {
+    gl.bindVertexArray(obj.geometry.vao)
+  } else {
+    setBuffersAndAttributes(gl, obj.geometry, obj.program)
+  }
+  drawBufferInfo(gl, obj.geometry, instanceCount)
+  {
+    // end draw
+    if (beUseVao) {
+      gl.bindVertexArray(null)
+    }
+  }
+}
+
+export function createVaoInfo(
+  gl: WebGLRenderingContext,
+  program: IProgramInfo,
+  geometry: IGeometryInfo
+) {
+  let vao = gl.createVertexArray()
+  gl.bindVertexArray(vao)
+  setBuffersAndAttributes(gl, geometry, program)
+  gl.bindVertexArray(null)
+  return vao
+}
+
 export * from './GLConstant'
-export * from './GeometryInfo'
+export * from './geometryInfo'
 export * from './Helper'
-export * from './ProgramInfo'
-export * from './State'
-export * from './Texture'
+export * from './programInfo'
+export * from './state'
+export * from './texture'
