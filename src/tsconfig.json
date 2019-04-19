@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "moduleResolution": "node",
     "target": "es5",
     "module": "es2015",
@@ -12,18 +13,17 @@
     "strict": true,
     "strictNullChecks": false,
     "sourceMap": true,
-    "declaration": false,
+    "declaration": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    // "declarationDir": "dist/types",
-    "outDir": "dome/lib",
+    "declarationDir": "../dist/types",
+    "outDir": "../dist",
     "typeRoots": [
-      "node_modules/@types",
-      "../dist/types"
-    ],
+      "node_modules/@types"
+    ]
   },
   "include": [
-    "src",
+    "*.ts"
   ]
 }

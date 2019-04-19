@@ -12,17 +12,14 @@
     "strict": true,
     "strictNullChecks": false,
     "sourceMap": true,
-    "declaration": true,
+    "declaration": false,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "declarationDir": "dist/types",
-    "outDir": "dist/lib",
+    // "declarationDir": "../exampesDist/types",
+    "outDir": "../exampesDist",
     "typeRoots": [
-      "node_modules/@types"
+      "../dist/types"
     ]
-  },
-  "include": [
-    "src",
-  ]
+  }
 }
