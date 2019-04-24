@@ -64,3 +64,7 @@ export function createIndexBufferInfo(gl: WebGLRenderingContext, data: TArrayInf
     }
     return vertexdata;
 }
+
+export function setIndexBuffer(gl: WebGLRenderingContext, indexbuffer: IvertexIndex) {
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexbuffer.glBuffer);
+}

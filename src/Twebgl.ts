@@ -1,7 +1,8 @@
-import { IcontextOptions, IgeometryInfo, IbassProgramInfo, IprogramInfo, Iobject } from "./type";
-import { setProgramState } from "./state";
+import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject } from "./type";
+import { setGeometry } from "./geometryInfo";
+import { setProgram } from "./programInfo";
 
-WebGLRenderingContext.prototype.addExtension = function(extname: string) {
+WebGLRenderingContext.prototype.addExtension = function(extname: string): boolean {
     let ext = this.getExtension(extname);
     if (ext) {
         switch (extname) {
@@ -9,21 +10,24 @@ WebGLRenderingContext.prototype.addExtension = function(extname: string) {
                 this.bindVertexArray = ext.bindVertexArrayOES.bind(ext);
                 this.createVertexArray = ext.createVertexArrayOES.bind(ext);
                 this.deleteVertexArray = ext.deleteVertexArrayOES.bind(ext);
-                break;
+                this.beActiveVao = true;
+                return true;
             case "ANGLE_instanced_arrays":
                 this.vertexAttribDivisor = ext.vertexAttribDivisorANGLE.bind(ext);
                 this.drawElementsInstanced = ext.drawElementsInstancedANGLE.bind(ext);
                 this.drawArraysInstanced = ext.drawArraysInstancedANGLE.bind(ext);
-                break;
+                this.beActiveInstance = true;
+                return true;
 
             default:
-                console.warn("还未处理");
-                break;
+                console.warn("Not handle in addExtension, type: " + extname);
+                return false;
         }
     }
+    return false;
 };
 
-Object.defineProperty(WebGLRenderingContext.prototype, "beWebgl2", {
+Object.defineProperty(WebGLRenderingContext, "beWebgl2", {
     get: function() {
         if (this.beWebgl2 == null) {
             let version = this.getParameter(this.VERSION);
@@ -44,6 +48,10 @@ export function setUpWebgl(canvas: HTMLCanvasElement, options: IcontextOptions =
             gl.addExtension(ext);
         });
     }
+    if (type == "webgl2") {
+        gl.beActiveInstance = true;
+        gl.beActiveVao = true;
+    }
 
     // canvas.addEventListener('webglcontextlost', function (e)
     // {
@@ -53,37 +61,9 @@ export function setUpWebgl(canvas: HTMLCanvasElement, options: IcontextOptions =
     return gl;
 }
 
-export function setBuffersAndAttributes(gl: WebGLRenderingContext, geometry: IgeometryInfo, program: IbassProgramInfo) {
-    for (let attName in program.attsDic) {
-        program.attsDic[attName].setter(geometry.atts[attName]);
-    }
-    if (geometry.indices) {
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.glBuffer);
-    }
-}
-
-/**
- * bing program 、set uniforms 、set webgl states
- * @param gl
- * @param program
- */
-export function setProgram(gl: WebGLRenderingContext, program: IprogramInfo) {
-    gl.useProgram(program.program);
-
-    if (program.uniforms) {
-        setProgramUniforms(program, program.uniforms);
-    }
-    if (program.states) {
-        setProgramState(gl, program.states);
-    }
-}
-
-export function setProgramUniforms(info: IbassProgramInfo, uniforms: { [name: string]: any }) {
-    for (let key in uniforms) {
-        let setter = info.uniformsDic[key].setter;
-        let value = uniforms[key];
-        setter(value);
-    }
+export function setGeometryAndProgram(gl: WebGLRenderingContext, geometry: IgeometryInfo, program: IprogramInfo) {
+    setProgram(gl, program);
+    setGeometry(gl, geometry, program);
 }
 
 export function drawBufferInfo(gl: WebGLRenderingContext, geometry: IgeometryInfo, instanceCount?: number): void {
@@ -119,7 +99,7 @@ export function drawObject(gl: WebGLRenderingContext, obj: Iobject, instanceCoun
     if (beUseVao) {
         gl.bindVertexArray(obj.geometry.vao);
     } else {
-        setBuffersAndAttributes(gl, obj.geometry, obj.program);
+        setGeometry(gl, obj.geometry, obj.program);
     }
     drawBufferInfo(gl, obj.geometry, instanceCount);
     {
@@ -129,18 +109,25 @@ export function drawObject(gl: WebGLRenderingContext, obj: Iobject, instanceCoun
         }
     }
 }
-
-export function createVaoInfo(gl: WebGLRenderingContext, program: IprogramInfo, geometry: IgeometryInfo) {
+//------------program和vao是一一对应的，geometry可以有多个vao
+/**
+ * 创建vao将geometry和program绑定
+ */
+export function createVaoByPrograme(
+    gl: WebGLRenderingContext,
+    program: IprogramInfo,
+    geometry: IgeometryInfo,
+): WebGLVertexArrayObject {
     let vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
-    setBuffersAndAttributes(gl, geometry, program);
+    setGeometry(gl, geometry, program);
     gl.bindVertexArray(null);
     return vao;
 }
 
-export * from "./GLConstant";
 export * from "./geometryInfo";
-export * from "./Helper";
 export * from "./programInfo";
+export * from "./glconstant";
 export * from "./state";
 export * from "./texture";
+export * from "./helper";

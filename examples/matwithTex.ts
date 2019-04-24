@@ -1,12 +1,12 @@
 import {
-    createGeometryInfoFromArray,
     createBassProgramInfo,
     createProgramInfo,
-    createTextureFromHtml,
     setProgram,
-    setBuffersAndAttributes,
+    setGeometry,
     drawBufferInfo,
     setUpWebgl,
+    createTextureFromImageSource,
+    createGeometryInfo,
 } from "../src/twebgl";
 
 import { IprogramState } from "../src/type";
@@ -16,14 +16,13 @@ export class DomeMatWithTex {
         let cc = document.getElementById("canvas") as HTMLCanvasElement;
         let gl = setUpWebgl(cc, { extentions: ["OES_vertex_array_object"] });
         // let be2 = gl;
-        let geometry = createGeometryInfoFromArray(
-            gl,
-            {
+        let geometry = createGeometryInfo(gl, {
+            atts: {
                 aPos: [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
                 aUv: [0, 1, 0, 0, 1, 0, 1, 1],
             },
-            [0, 1, 2, 0, 3, 2],
-        );
+            indices: [0, 1, 2, 0, 3, 2],
+        });
 
         let defErrorVs =
             "\
@@ -71,11 +70,11 @@ export class DomeMatWithTex {
                   gl_FragData[0] = _MainColor*tmplet_3;\
               }";
 
-        let state: IprogramState = { depth_Test: false };
+        let state: IprogramState = { depthTest: false };
         let imag = new Image();
         imag.src = "./dist/tes.png";
         imag.onload = () => {
-            uniforms["_MainTex"] = createTextureFromHtml(gl, imag);
+            uniforms["_MainTex"] = createTextureFromImageSource(gl, imag);
             program = createProgramInfo(gl, {
                 program: { vs: defVs, fs: defFs, name: "ssxxss" },
                 uniforms: uniforms,
@@ -90,7 +89,7 @@ export class DomeMatWithTex {
 
             // gl.useProgram(program.program);
             setProgram(gl, program);
-            setBuffersAndAttributes(gl, geometry, program);
+            setGeometry(gl, geometry, program);
             drawBufferInfo(gl, geometry);
 
             requestAnimationFrame(() => {

@@ -1,10 +1,10 @@
 ///<reference path="../dist/types/Global.d.ts" />
 import {
     setUpWebgl,
-    createGeometryInfoFromArray,
+    createGeometryInfo,
     createBassProgramInfo,
     createProgramInfo,
-    createVaoInfo,
+    createVaoByPrograme,
     setProgram,
     drawBufferInfo,
 } from "../src/twebgl";
@@ -15,13 +15,13 @@ export class DemoVao {
     static run() {
         let cc = document.getElementById("canvas") as HTMLCanvasElement;
         let gl = setUpWebgl(cc, { extentions: ["OES_vertex_array_object"] });
-        let geometry = createGeometryInfoFromArray(
-            gl,
-            {
+        let geometry = createGeometryInfo(gl, {
+            atts: {
                 aPos: [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
+                aUv: [0, 1, 0, 0, 1, 0, 1, 1],
             },
-            [0, 1, 2, 0, 3, 2],
-        );
+            indices: [0, 1, 2, 0, 3, 2],
+        });
 
         let defErrorVs =
             "\
@@ -45,7 +45,7 @@ export class DemoVao {
         let bassporgram = createBassProgramInfo(gl, defErrorVs, defErrorFs, "ssxx");
         let program = createProgramInfo(gl, { program: bassporgram, uniforms: uniforms });
 
-        geometry.vao = createVaoInfo(gl, program, geometry);
+        geometry.vao = createVaoByPrograme(gl, program, geometry);
         let render = () => {
             gl.clearColor(0.5, 0.1, 0.5, 1);
             gl.clearDepth(0);

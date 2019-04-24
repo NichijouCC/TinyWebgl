@@ -1,9 +1,9 @@
 import {
-    createGeometryInfoFromArray,
+    createGeometryInfo,
     createBassProgramInfo,
     createProgramInfo,
     setProgram,
-    setBuffersAndAttributes,
+    setGeometry,
     drawBufferInfo,
     setUpWebgl,
 } from "../src/twebgl";
@@ -12,14 +12,13 @@ export class DemoInstance {
     static run() {
         let cc = document.getElementById("canvas") as HTMLCanvasElement;
         let gl = setUpWebgl(cc, { extentions: ["ANGLE_instanced_arrays"] });
-        let geometry = createGeometryInfoFromArray(
-            gl,
-            {
+        let geometry = createGeometryInfo(gl, {
+            atts: {
                 aPos: [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
-                aOffset: { value: [-0.3, 0, 0, 0, 0.3, 0], divisor: 1, componentSize: 2 },
+                aUv: [0, 1, 0, 0, 1, 0, 1, 1],
             },
-            [0, 1, 2, 0, 3, 2],
-        );
+            indices: [0, 1, 2, 0, 3, 2],
+        });
 
         let defErrorVs =
             "\
@@ -51,7 +50,7 @@ export class DemoInstance {
 
             // gl.useProgram(program.program);
             setProgram(gl, program);
-            setBuffersAndAttributes(gl, geometry, program);
+            setGeometry(gl, geometry, program);
             drawBufferInfo(gl, geometry, 3);
 
             requestAnimationFrame(() => {

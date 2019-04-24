@@ -1,6 +1,6 @@
 import { GlConstants } from "./GLConstant";
 import { getGLTypeForTypedArray } from "./Helper";
-import { ItextureInfo, ItexViewDataInfo, ItexHtmlDataInfo } from "./type";
+import { ItextureInfo, ItexViewDataInfo, ItexImageDataInfo } from "./type";
 
 export function createTextureFromTypedArray(gl: WebGLRenderingContext, data: ArrayBufferView, texOP: ItexViewDataInfo) {
     deduceTextureTypedArrayOption(gl, data, texOP);
@@ -24,13 +24,13 @@ export function createTextureFromTypedArray(gl: WebGLRenderingContext, data: Arr
     );
 }
 
-export function createTextureFromHtml(
+export function createTextureFromImageSource(
     gl: WebGLRenderingContext,
-    data: HTMLImageElement | HTMLCanvasElement,
-    texOP?: ItexHtmlDataInfo,
+    data: TexImageSource,
+    texOP?: ItexImageDataInfo,
 ): WebGLTexture {
     texOP = texOP != null ? texOP : {};
-    deduceTextureHtmlOption(gl, data, texOP);
+    deduceTextureimgSourceOption(gl, data, texOP);
     let tex = gl.createTexture();
     gl.bindTexture(texOP.target, tex);
     gl.texParameteri(texOP.target, gl.TEXTURE_MAG_FILTER, texOP.filterMax);
@@ -82,10 +82,10 @@ export function deduceTextureTypedArrayOption(
     }
 }
 
-export function deduceTextureHtmlOption(
+export function deduceTextureimgSourceOption(
     gl: WebGLRenderingContext,
-    data: HTMLImageElement | HTMLCanvasElement,
-    texOP: ItexHtmlDataInfo,
+    data: TexImageSource,
+    texOP: ItexImageDataInfo,
 ) {
     texOP.width = data.width;
     texOP.height = data.height;

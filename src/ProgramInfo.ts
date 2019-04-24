@@ -1,19 +1,13 @@
 import { GlConstants } from "./GLConstant";
-import {
-    IbassProgramInfo,
-    IvertexAttrib,
-    IattributeInfo,
-    IuniformInfo,
-    IprogramInfoOptions,
-    IprogramInfo,
-} from "./type";
+import { IbassProgramInfo, IvertexAttrib, IattributeInfo, IuniformInfo, IprogramOptions, IprogramInfo } from "./type";
+import { setProgramStates } from "./state";
 
 export enum ShaderTypeEnum {
     VS,
     FS,
 }
 
-export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramInfoOptions): IprogramInfo {
+export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramOptions): IprogramInfo {
     let info: IprogramInfo;
     if ((op.program as IbassProgramInfo).program != null) {
         let bassprogram = op.program as IbassProgramInfo;
@@ -36,6 +30,30 @@ export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramInfoOpt
         info.states = op.states;
     }
     return info;
+}
+
+/**
+ * bing program 、set uniforms 、set webgl states
+ * @param gl
+ * @param program
+ */
+export function setProgram(gl: WebGLRenderingContext, program: IprogramInfo) {
+    gl.useProgram(program.program);
+
+    if (program.uniforms) {
+        setProgramUniforms(program, program.uniforms);
+    }
+    if (program.states) {
+        setProgramStates(gl, program.states);
+    }
+}
+
+export function setProgramUniforms(info: IbassProgramInfo, uniforms: { [name: string]: any }) {
+    for (let key in uniforms) {
+        let setter = info.uniformsDic[key].setter;
+        let value = uniforms[key];
+        setter(value);
+    }
 }
 
 export function createBassProgramInfo(
@@ -104,7 +122,7 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
             // name = name.substr(0, name.length - 3);
         }
         if (location == null) continue;
-        let bindpoint = gl["bindpoint"];
+        let bindpoint = gl.bindpoint;
         let func = getUniformSetter(gl, type, beArray, location, bindpoint);
         uniformDic[name] = { name: name, location: location, type: type, setter: func };
     }
@@ -214,7 +232,7 @@ export function getUniformSetter(
                 gl.bindTexture(gl.TEXTURE_2D, value);
                 gl.uniform1i(location, bindpoint);
 
-                gl["bindpoint"] = gl["bindpoint"] + 1;
+                gl.bindpoint = gl.bindpoint + 1;
             };
         default:
             console.error("uniformSetter not handle type:" + uniformType + " yet!");

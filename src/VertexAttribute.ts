@@ -78,6 +78,22 @@ export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: st
     return vertexdata;
 }
 
+export function setAttributeBuffer(gl: WebGLRenderingContext, value: IvertexAttrib, location: number) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, value.glBuffer);
+    gl.enableVertexAttribArray(location);
+    gl.vertexAttribPointer(
+        location,
+        value.componentSize,
+        value.componentDataType,
+        value.normalize,
+        value.bytesStride,
+        value.bytesOffset,
+    );
+    if (value.divisor !== undefined) {
+        gl.vertexAttribDivisor(location, value.divisor);
+    }
+}
+
 const uvRE = /uv/;
 const colorRE = /color/;
 function guessNumComponentsFromName(name: string, length: number = null): number {

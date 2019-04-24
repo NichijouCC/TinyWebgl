@@ -2,7 +2,7 @@ import { IprogramState } from "./type";
 
 import { GlConstants } from "./GLConstant";
 
-export function setProgramState(gl: WebGLRenderingContext, state: IprogramState) {
+export function setProgramStates(gl: WebGLRenderingContext, state: IprogramState) {
     if (state.beDeduce != true) {
         deduceFullShderState(state);
     }

@@ -279,7 +279,7 @@ export interface IprogramInfo extends IbassProgramInfo {
 //     uniforms: { [uniformName: string]: any };
 // }
 
-export interface IprogramInfoOptions {
+export interface IprogramOptions {
     program:
         | IbassProgramInfo
         | {
@@ -289,6 +289,12 @@ export interface IprogramInfoOptions {
           };
     uniforms?: { [name: string]: any };
     states?: IprogramState;
+}
+
+export interface IgeometryOptions {
+    atts: { [keyName: string]: TArrayInfo };
+    indices?: TArrayInfo;
+    primitiveType?: number;
 }
 
 export interface Iobject {
@@ -343,7 +349,7 @@ export interface ItexViewDataInfo extends ItextureInfo {
     height: number;
 }
 
-export interface ItexHtmlDataInfo extends ItextureInfo {
+export interface ItexImageDataInfo extends ItextureInfo {
     // data: HTMLImageElement | HTMLCanvasElement;
 
     pixelDatatype?: number;

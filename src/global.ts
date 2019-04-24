@@ -3,6 +3,8 @@ interface WebGLVertexArrayObject extends WebGLObject {}
 interface WebGLRenderingContext {
     beWebgl2: boolean;
     bindpoint: number;
+    beActiveVao: boolean;
+    beActiveInstance: boolean;
     addExtension(extName: string): void;
     createVertexArray(): any;
     bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
