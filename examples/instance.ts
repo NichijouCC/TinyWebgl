@@ -15,7 +15,7 @@ export class DemoInstance {
         let geometry = createGeometryInfo(gl, {
             atts: {
                 aPos: [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
-                aUv: [0, 1, 0, 0, 1, 0, 1, 1],
+                aOffset: { value: [-0.3, 0, 0, 0, 0.3, 0], divisor: 1, componentSize: 2 },
             },
             indices: [0, 1, 2, 0, 3, 2],
         });

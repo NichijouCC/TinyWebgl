@@ -6,7 +6,7 @@ export class GeometryInfo implements IgeometryInfo {
     primitiveType: number;
     atts: { [attName: string]: IvertexAttrib } = {};
     indices?: IvertexIndex;
-
+    vao?: WebGLVertexArrayObject;
     // mode: number;
     count: number;
     offset: number;
@@ -37,5 +37,13 @@ export function setGeometry(gl: WebGLRenderingContext, geometry: IgeometryInfo, 
     }
     if (geometry.indices) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.glBuffer);
+    }
+}
+
+export function setGeometryWithCached(gl: WebGLRenderingContext, geometry: IgeometryInfo, program: IprogramInfo) {
+    if (gl._cachedGeometry != geometry || gl._cachedProgram != program.program) {
+        setGeometry(gl, geometry, program);
+
+        gl._cachedGeometry = geometry;
     }
 }

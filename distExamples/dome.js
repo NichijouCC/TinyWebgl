@@ -1058,7 +1058,7 @@
             }
             if (location_1 == null)
                 continue;
-            var bindpoint = gl["bindpoint"];
+            var bindpoint = gl.bindpoint;
             var func = getUniformSetter(gl, type, beArray, location_1, bindpoint);
             uniformDic[name_1] = { name: name_1, location: location_1, type: type, setter: func };
         }
@@ -1161,7 +1161,7 @@
                     gl.activeTexture(gl.TEXTURE0 + bindpoint);
                     gl.bindTexture(gl.TEXTURE_2D, value);
                     gl.uniform1i(location, bindpoint);
-                    gl["bindpoint"] = gl["bindpoint"] + 1;
+                    gl.bindpoint = gl.bindpoint + 1;
                 };
             default:
                 console.error("uniformSetter not handle type:" + uniformType + " yet!");
@@ -1860,7 +1860,7 @@
             var geometry = createGeometryInfo(gl, {
                 atts: {
                     aPos: [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
-                    aUv: [0, 1, 0, 0, 1, 0, 1, 1],
+                    aOffset: { value: [-0.3, 0, 0, 0, 0.3, 0], divisor: 1, componentSize: 2 },
                 },
                 indices: [0, 1, 2, 0, 3, 2],
             });

@@ -1,6 +1,6 @@
 import { GlConstants } from "./GLConstant";
 import { IbassProgramInfo, IvertexAttrib, IattributeInfo, IuniformInfo, IprogramOptions, IprogramInfo } from "./type";
-import { setProgramStates } from "./state";
+import { setProgramStates, setProgramStatesWithCached } from "./state";
 
 export enum ShaderTypeEnum {
     VS,
@@ -45,6 +45,20 @@ export function setProgram(gl: WebGLRenderingContext, program: IprogramInfo) {
     }
     if (program.states) {
         setProgramStates(gl, program.states);
+    }
+}
+
+export function setProgramWithCached(gl: WebGLRenderingContext, program: IprogramInfo) {
+    if (gl._cachedProgram != program.program) {
+        gl._cachedProgram = program.program;
+
+        gl.useProgram(program.program);
+    }
+    if (program.uniforms) {
+        setProgramUniforms(program, program.uniforms);
+    }
+    if (program.states) {
+        setProgramStatesWithCached(gl, program.states);
     }
 }
 

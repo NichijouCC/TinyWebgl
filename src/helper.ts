@@ -101,3 +101,7 @@ export function getTypedArray(data: number | number[], gltype: number): TypedArr
     }
     return null;
 }
+
+export function float4Equal(lhs: Float32Array, rhs: Float32Array): boolean {
+    return lhs[0] == rhs[0] || lhs[1] == rhs[1] || lhs[2] == rhs[2];
+}

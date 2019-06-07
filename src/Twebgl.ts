@@ -1,15 +1,17 @@
-import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject } from "./type";
-import { setGeometry } from "./geometryInfo";
-import { setProgram } from "./programInfo";
+import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject, IbassProgramInfo } from "./type";
+import { setGeometry, setGeometryWithCached } from "./geometryInfo";
+import { setProgram, setProgramWithCached } from "./programInfo";
 
 declare global {
     interface WebGLVertexArrayObject extends WebGLObject {}
 
     interface WebGLRenderingContext {
         beWebgl2: boolean;
+
         bindpoint: number;
         beActiveVao: boolean;
         beActiveInstance: boolean;
+
         addExtension(extName: string): void;
         createVertexArray(): any;
         bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
@@ -82,6 +84,15 @@ export function setUpWebgl(canvas: HTMLCanvasElement, options: IcontextOptions =
 export function setGeometryAndProgram(gl: WebGLRenderingContext, geometry: IgeometryInfo, program: IprogramInfo) {
     setProgram(gl, program);
     setGeometry(gl, geometry, program);
+}
+
+export function setGeometryAndProgramWithCached(
+    gl: WebGLRenderingContext,
+    geometry: IgeometryInfo,
+    program: IprogramInfo,
+) {
+    setGeometryWithCached(gl, geometry, program);
+    setProgramWithCached(gl, program);
 }
 
 export function drawBufferInfo(gl: WebGLRenderingContext, geometry: IgeometryInfo, instanceCount?: number): void {

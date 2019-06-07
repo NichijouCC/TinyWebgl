@@ -268,6 +268,9 @@ export interface IprogramState {
     colorMask?: [];
 }
 
+/**
+ *  contain bassprogram（shader）、uniforms设参、states设参
+ */
 export interface IprogramInfo extends IbassProgramInfo {
     uniforms?: { [name: string]: any };
     states?: IprogramState;
