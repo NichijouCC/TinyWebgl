@@ -33,22 +33,6 @@ declare global {
         _cacheColorMaskA: boolean;
     }
 }
-
-export function setViewPortWithCached(gl: WebGLRenderingContext, x: number, y: number, width: number, height: number) {
-    let bechanged =
-        gl._cachedViewPortX != x ||
-        gl._cachedViewPortY != y ||
-        gl._cachedViewPortWidth != width ||
-        gl._cachedViewPortHeight != height;
-    if (!bechanged) {
-        gl.viewport(x, y, width, height);
-        gl._cachedViewPortX = x;
-        gl._cachedViewPortY = y;
-        gl._cachedViewPortWidth = width;
-        gl._cachedViewPortHeight = height;
-    }
-}
-
 export function setClear(
     gl: WebGLRenderingContext,
     clearDepth: boolean,
@@ -69,6 +53,21 @@ export function setClear(
         cleartag |= gl.STENCIL_BUFFER_BIT;
     }
     gl.clear(cleartag);
+}
+
+export function setViewPortWithCached(gl: WebGLRenderingContext, x: number, y: number, width: number, height: number) {
+    let bechanged =
+        gl._cachedViewPortX != x ||
+        gl._cachedViewPortY != y ||
+        gl._cachedViewPortWidth != width ||
+        gl._cachedViewPortHeight != height;
+    if (!bechanged) {
+        gl.viewport(x, y, width, height);
+        gl._cachedViewPortX = x;
+        gl._cachedViewPortY = y;
+        gl._cachedViewPortWidth = width;
+        gl._cachedViewPortHeight = height;
+    }
 }
 
 export function setColorMaskWithCached(

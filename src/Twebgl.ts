@@ -1,5 +1,5 @@
 import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject, IbassProgramInfo } from "./type";
-import { setGeometry, setGeometryWithCached } from "./geometryInfo";
+import { setGeometryWithAdvanced, setGeometryWithCached, setGeometry } from "./geometryInfo";
 import { setProgram, setProgramWithCached } from "./programInfo";
 
 declare global {
@@ -91,7 +91,7 @@ export function setGeometryAndProgramWithCached(
     geometry: IgeometryInfo,
     program: IprogramInfo,
 ) {
-    setGeometryWithCached(gl, geometry, program);
+    setGeometryWithAdvanced(gl, geometry, program);
     setProgramWithCached(gl, program);
 }
 
@@ -123,35 +123,11 @@ export function drawBufferInfo(gl: WebGLRenderingContext, geometry: IgeometryInf
 }
 
 export function drawObject(gl: WebGLRenderingContext, obj: Iobject, instanceCount?: number) {
-    setProgram(gl, obj.program);
-    let beUseVao = obj.geometry.vao != null;
-    if (beUseVao) {
-        gl.bindVertexArray(obj.geometry.vao);
-    } else {
-        setGeometry(gl, obj.geometry, obj.program);
-    }
+    setGeometryAndProgramWithCached(gl, obj.geometry, obj.program);
     drawBufferInfo(gl, obj.geometry, instanceCount);
-    {
-        // end draw
-        if (beUseVao) {
-            gl.bindVertexArray(null);
-        }
+    if (gl.beActiveVao) {
+        gl.bindVertexArray(null);
     }
-}
-//------------program和vao是一一对应的，geometry可以有多个vao
-/**
- * 创建vao将geometry和program绑定
- */
-export function createVaoByPrograme(
-    gl: WebGLRenderingContext,
-    program: IprogramInfo,
-    geometry: IgeometryInfo,
-): WebGLVertexArrayObject {
-    let vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    setGeometry(gl, geometry, program);
-    gl.bindVertexArray(null);
-    return vao;
 }
 
 export * from "./geometryInfo";

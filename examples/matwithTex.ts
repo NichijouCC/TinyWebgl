@@ -2,11 +2,12 @@ import {
     createBassProgramInfo,
     createProgramInfo,
     setProgram,
-    setGeometry,
+    setGeometryWithAdvanced,
     drawBufferInfo,
     setUpWebgl,
     createTextureFromImageSource,
     createGeometryInfo,
+    setGeometry,
 } from "../src/twebgl";
 
 import { IprogramState } from "../src/type";
@@ -72,7 +73,7 @@ export class DomeMatWithTex {
 
         let state: IprogramState = { depthTest: false };
         let imag = new Image();
-        imag.src = "./dist/tes.png";
+        imag.src = "./res/tes.png";
         imag.onload = () => {
             uniforms["_MainTex"] = createTextureFromImageSource(gl, imag);
             program = createProgramInfo(gl, {

@@ -8,20 +8,16 @@ export enum ShaderTypeEnum {
 }
 
 export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramOptions): IprogramInfo {
-    let info: IprogramInfo;
-    if ((op.program as IbassProgramInfo).program != null) {
-        let bassprogram = op.program as IbassProgramInfo;
-        info = {} as IprogramInfo;
-        info.program = bassprogram.program;
-        info.attsDic = bassprogram.attsDic;
-        info.uniformsDic = bassprogram.uniformsDic;
+    let info: IprogramInfo = { bassProgram: null };
+    if ((op.program as IbassProgramInfo).id != null) {
+        info.bassProgram = op.program as IbassProgramInfo;
     } else {
         let bassprogramOp = op.program as {
             vs: string;
             fs: string;
             name: string;
         };
-        info = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name) as IprogramInfo;
+        info.bassProgram = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name);
     }
     if (op.uniforms) {
         info.uniforms = op.uniforms;
@@ -38,10 +34,10 @@ export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramOptions
  * @param program
  */
 export function setProgram(gl: WebGLRenderingContext, program: IprogramInfo) {
-    gl.useProgram(program.program);
+    gl.useProgram(program.bassProgram.program);
 
     if (program.uniforms) {
-        setProgramUniforms(program, program.uniforms);
+        setProgramUniforms(program.bassProgram, program.uniforms);
     }
     if (program.states) {
         setProgramStates(gl, program.states);
@@ -49,13 +45,13 @@ export function setProgram(gl: WebGLRenderingContext, program: IprogramInfo) {
 }
 
 export function setProgramWithCached(gl: WebGLRenderingContext, program: IprogramInfo) {
-    if (gl._cachedProgram != program.program) {
-        gl._cachedProgram = program.program;
+    if (gl._cachedProgram != program.bassProgram.program) {
+        gl._cachedProgram = program.bassProgram.program;
 
-        gl.useProgram(program.program);
+        gl.useProgram(program.bassProgram.program);
     }
     if (program.uniforms) {
-        setProgramUniforms(program, program.uniforms);
+        setProgramUniforms(program.bassProgram, program.uniforms);
     }
     if (program.states) {
         setProgramStatesWithCached(gl, program.states);
@@ -67,6 +63,32 @@ export function setProgramUniforms(info: IbassProgramInfo, uniforms: { [name: st
         let setter = info.uniformsDic[key].setter;
         let value = uniforms[key];
         setter(value);
+    }
+}
+
+class BassPrograme implements IbassProgramInfo {
+    readonly id: number;
+    programName: string;
+    program: WebGLProgram;
+    uniformsDic: { [name: string]: IuniformInfo };
+    attsDic: { [name: string]: IattributeInfo };
+
+    constructor(
+        programName: string,
+        program: WebGLProgram,
+        uniformsDic: { [name: string]: IuniformInfo },
+        attsDic: { [name: string]: IattributeInfo },
+    ) {
+        this.id = BassPrograme.nextID();
+        this.programName = programName;
+        this.program = program;
+        this.uniformsDic = uniformsDic;
+        this.attsDic = attsDic;
+    }
+
+    private static count = 0;
+    static nextID() {
+        return BassPrograme.count++;
     }
 }
 
@@ -93,7 +115,8 @@ export function createBassProgramInfo(
         } else {
             let attsInfo = getAttributesInfo(gl, item);
             let uniformsInfo = getUniformsInfo(gl, item);
-            return { program: item, programName: name, uniformsDic: uniformsInfo, attsDic: attsInfo };
+            return new BassPrograme(name, item, uniformsInfo, attsInfo);
+            // return { program: item, programName: name, uniformsDic: uniformsInfo, attsDic: attsInfo };
         }
     }
 }

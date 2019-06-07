@@ -809,6 +809,7 @@
     function guessNumComponentsFromName(name, length) {
         if (length === void 0) { length = null; }
         var numComponents;
+        name = name.toLowerCase();
         if (uvRE.test(name)) {
             numComponents = 2;
         }
@@ -830,8 +831,14 @@
 
     var GeometryInfo = /** @class */ (function () {
         function GeometryInfo() {
+            this.vaoDic = {};
             this.atts = {};
+            this.id = GeometryInfo.nextID();
         }
+        GeometryInfo.nextID = function () {
+            return GeometryInfo.count++;
+        };
+        GeometryInfo.count = 0;
         return GeometryInfo;
     }());
     function createGeometryInfo(gl, op) {
@@ -852,8 +859,8 @@
         return info;
     }
     function setGeometry(gl, geometry, program) {
-        for (var attName in program.attsDic) {
-            program.attsDic[attName].setter(geometry.atts[attName]);
+        for (var attName in program.bassProgram.attsDic) {
+            program.bassProgram.attsDic[attName].setter(geometry.atts[attName]);
         }
         if (geometry.indices) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.glBuffer);
@@ -962,17 +969,13 @@
         ShaderTypeEnum[ShaderTypeEnum["FS"] = 1] = "FS";
     })(ShaderTypeEnum || (ShaderTypeEnum = {}));
     function createProgramInfo(gl, op) {
-        var info;
-        if (op.program.program != null) {
-            var bassprogram = op.program;
-            info = {};
-            info.program = bassprogram.program;
-            info.attsDic = bassprogram.attsDic;
-            info.uniformsDic = bassprogram.uniformsDic;
+        var info = { bassProgram: null };
+        if (op.program.id != null) {
+            info.bassProgram = op.program;
         }
         else {
             var bassprogramOp = op.program;
-            info = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name);
+            info.bassProgram = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name);
         }
         if (op.uniforms) {
             info.uniforms = op.uniforms;
@@ -988,9 +991,9 @@
      * @param program
      */
     function setProgram(gl, program) {
-        gl.useProgram(program.program);
+        gl.useProgram(program.bassProgram.program);
         if (program.uniforms) {
-            setProgramUniforms(program, program.uniforms);
+            setProgramUniforms(program.bassProgram, program.uniforms);
         }
         if (program.states) {
             setProgramStates(gl, program.states);
@@ -1003,6 +1006,20 @@
             setter(value);
         }
     }
+    var BassPrograme = /** @class */ (function () {
+        function BassPrograme(programName, program, uniformsDic, attsDic) {
+            this.id = BassPrograme.nextID();
+            this.programName = programName;
+            this.program = program;
+            this.uniformsDic = uniformsDic;
+            this.attsDic = attsDic;
+        }
+        BassPrograme.nextID = function () {
+            return BassPrograme.count++;
+        };
+        BassPrograme.count = 0;
+        return BassPrograme;
+    }());
     function createBassProgramInfo(gl, vs, fs, name) {
         var vsShader = createShader(gl, ShaderTypeEnum.VS, vs, name + "_vs");
         var fsShader = createShader(gl, ShaderTypeEnum.FS, fs, name + "_fs");
@@ -1021,7 +1038,8 @@
             else {
                 var attsInfo = getAttributesInfo(gl, item);
                 var uniformsInfo = getUniformsInfo(gl, item);
-                return { program: item, programName: name, uniformsDic: uniformsInfo, attsDic: attsInfo };
+                return new BassPrograme(name, item, uniformsInfo, attsInfo);
+                // return { program: item, programName: name, uniformsDic: uniformsInfo, attsDic: attsInfo };
             }
         }
     }
@@ -1778,6 +1796,66 @@
         GlConstants[GlConstants["MAX_TEXTURE_MAX_ANISOTROPY_EXT"] = 34047] = "MAX_TEXTURE_MAX_ANISOTROPY_EXT";
     })(GlConstants$1 || (GlConstants$1 = {}));
 
+    function createTextureFromImageSource(gl, data, texOP) {
+        texOP = texOP != null ? texOP : {};
+        deduceTextureimgSourceOption(gl, data, texOP);
+        var tex = gl.createTexture();
+        gl.bindTexture(texOP.target, tex);
+        gl.texParameteri(texOP.target, gl.TEXTURE_MAG_FILTER, texOP.filterMax);
+        gl.texParameteri(texOP.target, gl.TEXTURE_MIN_FILTER, texOP.filterMin);
+        gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_S, texOP.wrapS);
+        gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_T, texOP.wrapT);
+        gl.texImage2D(texOP.target, 0, texOP.pixelFormat, texOP.pixelFormat, texOP.pixelDatatype, data);
+        return tex;
+    }
+    function dedeuceBaseTextureOption(gl, texOP) {
+        texOP.target = texOP.target ? texOP.target : GlConstants.TEXTURE_2D;
+        // texOP.wrap_s = texOP.wrap_s ? texOP.wrap_s : GLConstants.CLAMP_TO_EDGE;
+        // texOP.wrap_t = texOP.wrap_t ? texOP.wrap_t : GLConstants.CLAMP_TO_EDGE;
+        texOP.pixelFormat = texOP.pixelFormat ? texOP.pixelFormat : GlConstants.RGBA;
+        if (texOP.enableMipMap && canGenerateMipmap(gl, texOP.width, texOP.height)) {
+            texOP.enableMipMap = true;
+        }
+        else {
+            texOP.enableMipMap = false;
+        }
+        if (texOP.filterMax == null) {
+            texOP.filterMax = texOP.enableMipMap ? GlConstants.LINEAR_MIPMAP_LINEAR : GlConstants.LINEAR;
+        }
+        if (texOP.filterMin == null) {
+            texOP.filterMin = texOP.enableMipMap ? GlConstants.LINEAR_MIPMAP_LINEAR : GlConstants.LINEAR;
+        }
+        if (texOP.wrapS == null) {
+            texOP.wrapS = canWrapReapeat(gl, texOP.width, texOP.height) ? GlConstants.REPEAT : GlConstants.CLAMP_TO_EDGE;
+        }
+        if (texOP.wrapT == null) {
+            texOP.wrapT = canWrapReapeat(gl, texOP.width, texOP.height) ? GlConstants.REPEAT : GlConstants.CLAMP_TO_EDGE;
+        }
+    }
+    function deduceTextureimgSourceOption(gl, data, texOP) {
+        texOP.width = data.width;
+        texOP.height = data.height;
+        dedeuceBaseTextureOption(gl, texOP);
+        if (texOP.pixelDatatype == null) {
+            texOP.pixelDatatype = GlConstants.UNSIGNED_BYTE;
+        }
+    }
+    function isPowerOf2(value) {
+        return (value & (value - 1)) === 0;
+    }
+    function canGenerateMipmap(gl, width, height) {
+        if (!gl.beWebgl2) {
+            return isPowerOf2(width) && isPowerOf2(height);
+        }
+        return true;
+    }
+    function canWrapReapeat(gl, width, height) {
+        if (!gl.beWebgl2) {
+            return isPowerOf2(width) && isPowerOf2(height);
+        }
+        return true;
+    }
+
     WebGLRenderingContext.prototype.addExtension = function (extname) {
         var ext = this.getExtension(extname);
         if (ext) {
@@ -1851,25 +1929,25 @@
         }
     }
 
-    var DemoInstance = /** @class */ (function () {
-        function DemoInstance() {
+    var DomeMatWithTex = /** @class */ (function () {
+        function DomeMatWithTex() {
         }
-        DemoInstance.run = function () {
+        DomeMatWithTex.run = function () {
             var cc = document.getElementById("canvas");
-            var gl = setUpWebgl(cc, { extentions: ["ANGLE_instanced_arrays"] });
+            var gl = setUpWebgl(cc, { extentions: ["OES_vertex_array_object"] });
+            // let be2 = gl;
             var geometry = createGeometryInfo(gl, {
                 atts: {
                     aPos: [-0.5, -0.5, 0.5, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0],
-                    aOffset: { value: [-0.3, 0, 0, 0, 0.3, 0], divisor: 1, componentSize: 2 },
+                    aUv: [0, 1, 0, 0, 1, 0, 1, 1],
                 },
                 indices: [0, 1, 2, 0, 3, 2],
             });
             var defErrorVs = "\
               attribute vec3 aPos;\
-              attribute vec2 aOffset;\
               void main()\
               {\
-                  highp vec4 tmplet_1=vec4(aPos.xy*0.2+aOffset,aPos.z,1.0);\
+                  highp vec4 tmplet_1=vec4(aPos.xyz,1.0);\
                   gl_Position = tmplet_1;\
               }";
             var defErrorFs = "\
@@ -1882,6 +1960,36 @@
             uniforms["_MainColor"] = new Float32Array([0.5, 1, 0.5, 1]);
             var bassporgram = createBassProgramInfo(gl, defErrorVs, defErrorFs, "ssxx");
             var program = createProgramInfo(gl, { program: bassporgram, uniforms: uniforms });
+            var defVs = "\
+              attribute vec3 aPos;\
+              attribute vec2 aUv;\
+              varying highp vec2 xlv_TEXCOORD0;   \
+              void main()\
+              {\
+                  highp vec4 tmplet_1=vec4(aPos.xyz,1.0);\
+                  xlv_TEXCOORD0=aUv;\
+                  gl_Position = tmplet_1;\
+              }";
+            var defFs = "\
+              uniform highp vec4 _MainColor;\
+              varying highp vec2 xlv_TEXCOORD0;   \
+              uniform sampler2D _MainTex;\
+              void main()\
+              {\
+                  lowp vec4 tmplet_3= texture2D(_MainTex, xlv_TEXCOORD0);\
+                  gl_FragData[0] = _MainColor*tmplet_3;\
+              }";
+            var state = { depthTest: false };
+            var imag = new Image();
+            imag.src = "./res/tes.png";
+            imag.onload = function () {
+                uniforms["_MainTex"] = createTextureFromImageSource(gl, imag);
+                program = createProgramInfo(gl, {
+                    program: { vs: defVs, fs: defFs, name: "ssxxss" },
+                    uniforms: uniforms,
+                    states: state,
+                });
+            };
             var render = function () {
                 gl.clearColor(0.5, 0.1, 0.5, 1);
                 gl.clearDepth(0);
@@ -1889,19 +1997,21 @@
                 // gl.useProgram(program.program);
                 setProgram(gl, program);
                 setGeometry(gl, geometry, program);
-                drawBufferInfo(gl, geometry, 3);
+                drawBufferInfo(gl, geometry);
                 requestAnimationFrame(function () {
                     render();
                 });
             };
             render();
         };
-        return DemoInstance;
+        return DomeMatWithTex;
     }());
 
     console.log("@@@@@@@@@@@@@");
     window.onload = function () {
-        DemoInstance.run();
+        // DemoInstance.run();
+        // DemoVao.run();
+        DomeMatWithTex.run();
     };
 
 })));

@@ -45,7 +45,7 @@ export class DemoVao {
         let bassporgram = createBassProgramInfo(gl, defErrorVs, defErrorFs, "ssxx");
         let program = createProgramInfo(gl, { program: bassporgram, uniforms: uniforms });
 
-        geometry.vao = createVaoByPrograme(gl, program, geometry);
+        let vao = createVaoByPrograme(gl, program, geometry);
         let render = () => {
             gl.clearColor(0.5, 0.1, 0.5, 1);
             gl.clearDepth(0);
@@ -53,9 +53,9 @@ export class DemoVao {
 
             setProgram(gl, program);
             // setBuffersAndAttributes(gl, geometry, program);
-            gl.bindVertexArray(geometry.vao);
+            gl.bindVertexArray(vao);
             drawBufferInfo(gl, geometry);
-            gl.bindVertexArray(null);
+            // gl.bindVertexArray(null);
             requestAnimationFrame(() => {
                 render();
             });

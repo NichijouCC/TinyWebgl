@@ -3,9 +3,10 @@ import {
     createBassProgramInfo,
     createProgramInfo,
     setProgram,
-    setGeometry,
+    setGeometryWithAdvanced,
     drawBufferInfo,
     setUpWebgl,
+    drawObject,
 } from "../src/twebgl";
 
 export class DemoInstance {
@@ -49,9 +50,7 @@ export class DemoInstance {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             // gl.useProgram(program.program);
-            setProgram(gl, program);
-            setGeometry(gl, geometry, program);
-            drawBufferInfo(gl, geometry, 3);
+            drawObject(gl, { geometry: geometry, program: program }, 3);
 
             requestAnimationFrame(() => {
                 render();

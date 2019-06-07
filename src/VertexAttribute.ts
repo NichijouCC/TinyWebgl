@@ -98,6 +98,7 @@ const uvRE = /uv/;
 const colorRE = /color/;
 function guessNumComponentsFromName(name: string, length: number = null): number {
     let numComponents;
+    name = name.toLowerCase();
     if (uvRE.test(name)) {
         numComponents = 2;
     } else if (colorRE.test(name)) {

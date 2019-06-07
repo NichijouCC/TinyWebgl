@@ -96,9 +96,11 @@ export interface IvertexIndex {
  * 模型信息
  */
 export interface IgeometryInfo {
+    readonly id: number;
     atts: { [attName: string]: IvertexAttrib };
     indices?: IvertexIndex;
-    vao?: WebGLVertexArrayObject;
+    vaoDic: { [programeId: number]: WebGLVertexArrayObject };
+    // vao?: WebGLVertexArrayObject;
     count: number;
     offset: number;
     primitiveType: number;
@@ -124,6 +126,7 @@ export interface IattributeInfo {
  * shaderprogram
  */
 export interface IbassProgramInfo {
+    readonly id: number;
     programName: string;
     program: WebGLProgram;
     uniformsDic: { [name: string]: IuniformInfo };
@@ -271,7 +274,8 @@ export interface IprogramState {
 /**
  *  contain bassprogram（shader）、uniforms设参、states设参
  */
-export interface IprogramInfo extends IbassProgramInfo {
+export interface IprogramInfo {
+    bassProgram: IbassProgramInfo;
     uniforms?: { [name: string]: any };
     states?: IprogramState;
 }
