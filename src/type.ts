@@ -133,6 +133,12 @@ export interface IbassProgramInfo {
     attsDic: { [name: string]: IattributeInfo };
 }
 
+export interface IbassProgramOption {
+    vs: string;
+    fs: string;
+    name?: string;
+}
+
 export interface IprogramState {
     /**
      * 标志符号
@@ -287,13 +293,7 @@ export interface IprogramInfo {
 // }
 
 export interface IprogramOptions {
-    program:
-        | IbassProgramInfo
-        | {
-              vs: string;
-              fs: string;
-              name: string;
-          };
+    program: IbassProgramInfo | IbassProgramOption;
     uniforms?: { [name: string]: any };
     states?: IprogramState;
 }

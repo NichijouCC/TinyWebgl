@@ -1,5 +1,14 @@
 import { GlConstants } from "./GLConstant";
-import { IbassProgramInfo, IvertexAttrib, IattributeInfo, IuniformInfo, IprogramOptions, IprogramInfo } from "./type";
+import {
+    IbassProgramInfo,
+    IvertexAttrib,
+    IattributeInfo,
+    IuniformInfo,
+    IprogramOptions,
+    IprogramInfo,
+    IbassProgramOption,
+    IprogramState,
+} from "./type";
 import { setProgramStates, setProgramStatesWithCached } from "./state";
 
 export enum ShaderTypeEnum {
@@ -7,24 +16,16 @@ export enum ShaderTypeEnum {
     FS,
 }
 
-export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramOptions): IprogramInfo {
-    let info: IprogramInfo = { bassProgram: null };
-    if ((op.program as IbassProgramInfo).id != null) {
-        info.bassProgram = op.program as IbassProgramInfo;
-    } else {
-        let bassprogramOp = op.program as {
-            vs: string;
-            fs: string;
-            name: string;
-        };
+export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramOptions): Program {
+    let info = new Program();
+    if (!(op.program instanceof BassProgram)) {
+        let bassprogramOp = op.program as IbassProgramOption;
         info.bassProgram = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name);
+    } else {
+        info.bassProgram = op.program;
     }
-    if (op.uniforms) {
-        info.uniforms = op.uniforms;
-    }
-    if (op.states) {
-        info.states = op.states;
-    }
+    info.uniforms = op.uniforms;
+    info.states = op.states;
     return info;
 }
 
@@ -65,8 +66,13 @@ export function setProgramUniforms(info: IbassProgramInfo, uniforms: { [name: st
         setter(value);
     }
 }
+class Program implements IprogramInfo {
+    bassProgram: IbassProgramInfo;
+    uniforms?: { [name: string]: any };
+    states?: IprogramState;
+}
 
-class BassPrograme implements IbassProgramInfo {
+class BassProgram implements IbassProgramInfo {
     readonly id: number;
     programName: string;
     program: WebGLProgram;
@@ -79,7 +85,7 @@ class BassPrograme implements IbassProgramInfo {
         uniformsDic: { [name: string]: IuniformInfo },
         attsDic: { [name: string]: IattributeInfo },
     ) {
-        this.id = BassPrograme.nextID();
+        this.id = BassProgram.nextID();
         this.programName = programName;
         this.program = program;
         this.uniformsDic = uniformsDic;
@@ -88,16 +94,11 @@ class BassPrograme implements IbassProgramInfo {
 
     private static count = 0;
     static nextID() {
-        return BassPrograme.count++;
+        return BassProgram.count++;
     }
 }
 
-export function createBassProgramInfo(
-    gl: WebGLRenderingContext,
-    vs: string,
-    fs: string,
-    name: string,
-): IbassProgramInfo {
+export function createBassProgramInfo(gl: WebGLRenderingContext, vs: string, fs: string, name: string): BassProgram {
     let vsShader = createShader(gl, ShaderTypeEnum.VS, vs, name + "_vs");
     let fsShader = createShader(gl, ShaderTypeEnum.FS, fs, name + "_fs");
     if (vsShader && fsShader) {
@@ -115,7 +116,7 @@ export function createBassProgramInfo(
         } else {
             let attsInfo = getAttributesInfo(gl, item);
             let uniformsInfo = getUniformsInfo(gl, item);
-            return new BassPrograme(name, item, uniformsInfo, attsInfo);
+            return new BassProgram(name, item, uniformsInfo, attsInfo);
             // return { program: item, programName: name, uniformsDic: uniformsInfo, attsDic: attsInfo };
         }
     }
