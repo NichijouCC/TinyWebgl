@@ -17,16 +17,24 @@ export enum ShaderTypeEnum {
 }
 
 export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramOptions): Program {
-    let info = new Program();
+    let bassProgram;
     if (!(op.program instanceof BassProgram)) {
         let bassprogramOp = op.program as IbassProgramOption;
-        info.bassProgram = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name);
+        bassProgram = createBassProgramInfo(gl, bassprogramOp.vs, bassprogramOp.fs, bassprogramOp.name);
     } else {
-        info.bassProgram = op.program;
+        bassProgram = op.program;
     }
-    info.uniforms = op.uniforms;
-    info.states = op.states;
-    return info;
+    if(bassProgram)
+    {
+        let info = new Program();
+        info.bassProgram=bassProgram;
+        info.uniforms = op.uniforms;
+        info.states = op.states;
+        return info;
+    }else
+    {
+        return null;
+    }
 }
 
 /**
@@ -197,11 +205,11 @@ export function getUniformSetter(
         case gl.FLOAT:
             if (beArray) {
                 return (value: any) => {
-                    gl.uniform1f(location, value);
+                    gl.uniform1fv(location, value);
                 };
             } else {
                 return (value: any) => {
-                    gl.uniform1fv(location, value);
+                    gl.uniform1f(location, value);
                 };
             }
             break;
