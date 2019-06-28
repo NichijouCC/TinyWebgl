@@ -1,25 +1,30 @@
 import { GlConstants } from "./GLConstant";
 import { getGLTypeForTypedArray } from "./Helper";
-import { ItextureInfo, ItexViewDataInfo, ItexImageDataInfo } from "./type";
+import { ItextureInfo, ItexViewDataOption, ItexImageDataOption } from "./type";
 
-export function createTextureFromTypedArray(gl: WebGLRenderingContext, data: ArrayBufferView, texOP: ItexViewDataInfo) {
-    deduceTextureTypedArrayOption(gl, data, texOP);
+export function createTextureFromTypedArray(gl: WebGLRenderingContext, data: ArrayBufferView, texOP: ItexViewDataOption) {
+    // deduceTextureTypedArrayOption(gl, data, texOP);
+
+    let target=texOP&&texOP.target||gl.TEXTURE_2D;
+    let pixelFormat=texOP&&texOP.pixelFormat||gl.RGBA;
+    let pixelDatatype=texOP&&texOP.pixelDatatype||gl.UNSIGNED_BYTE;
+
     let tex = gl.createTexture();
-    gl.bindTexture(texOP.target, tex);
-    gl.texParameteri(texOP.target, gl.TEXTURE_MAG_FILTER, texOP.filterMax);
-    gl.texParameteri(texOP.target, gl.TEXTURE_MIN_FILTER, texOP.filterMin);
-    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_S, texOP.wrapS);
-    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_T, texOP.wrapT);
+    gl.bindTexture(target, tex);
+    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, texOP&&texOP.filterMax||gl.LINEAR);
+    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, texOP&&texOP.filterMin||gl.LINEAR);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_S, texOP&&texOP.wrapS||gl.CLAMP_TO_EDGE);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_T, texOP&&texOP.wrapT||gl.CLAMP_TO_EDGE);
 
     gl.texImage2D(
-        texOP.target,
+        target,
         0,
-        texOP.pixelFormat,
+        pixelFormat,
         texOP.width,
         texOP.height,
         0,
-        texOP.pixelFormat,
-        texOP.pixelDatatype,
+        pixelFormat,
+        pixelDatatype,
         data,
     );
 }
@@ -27,73 +32,76 @@ export function createTextureFromTypedArray(gl: WebGLRenderingContext, data: Arr
 export function createTextureFromImageSource(
     gl: WebGLRenderingContext,
     data: TexImageSource,
-    texOP?: ItexImageDataInfo,
+    texOP?: ItexImageDataOption,
 ): WebGLTexture {
-    texOP = texOP != null ? texOP : {};
-    deduceTextureimgSourceOption(gl, data, texOP);
     let tex = gl.createTexture();
-    gl.bindTexture(texOP.target, tex);
-    gl.texParameteri(texOP.target, gl.TEXTURE_MAG_FILTER, texOP.filterMax);
-    gl.texParameteri(texOP.target, gl.TEXTURE_MIN_FILTER, texOP.filterMin);
-    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_S, texOP.wrapS);
-    gl.texParameteri(texOP.target, gl.TEXTURE_WRAP_T, texOP.wrapT);
 
-    gl.texImage2D(texOP.target, 0, texOP.pixelFormat, texOP.pixelFormat, texOP.pixelDatatype, data);
+    let target=texOP&&texOP.target||gl.TEXTURE_2D;
+    let pixelFormat=texOP&&texOP.pixelFormat||gl.RGBA;
+    let pixelDatatype=texOP&&texOP.pixelDatatype||gl.UNSIGNED_BYTE;
+
+    gl.bindTexture(target, tex);
+    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER,texOP&&texOP.filterMax||gl.LINEAR);
+    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, texOP&&texOP.filterMin||gl.LINEAR);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_S, texOP&&texOP.wrapS||gl.CLAMP_TO_EDGE);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_T, texOP&&texOP.wrapT||gl.CLAMP_TO_EDGE);
+
+    gl.texImage2D(target, 0,pixelFormat, pixelFormat, pixelDatatype, data);
 
     return tex;
 }
 
-function dedeuceBaseTextureOption(gl: WebGLRenderingContext, texOP: ItextureInfo) {
-    texOP.target = texOP.target ? texOP.target : GlConstants.TEXTURE_2D;
-    // texOP.wrap_s = texOP.wrap_s ? texOP.wrap_s : GLConstants.CLAMP_TO_EDGE;
-    // texOP.wrap_t = texOP.wrap_t ? texOP.wrap_t : GLConstants.CLAMP_TO_EDGE;
-    texOP.pixelFormat = texOP.pixelFormat ? texOP.pixelFormat : GlConstants.RGBA;
+// function dedeuceBaseTextureOption(gl: WebGLRenderingContext, texOP: ItextureInfo) {
+//     texOP.target = texOP.target ? texOP.target : GlConstants.TEXTURE_2D;
+//     // texOP.wrap_s = texOP.wrap_s ? texOP.wrap_s : GLConstants.CLAMP_TO_EDGE;
+//     // texOP.wrap_t = texOP.wrap_t ? texOP.wrap_t : GLConstants.CLAMP_TO_EDGE;
+//     texOP.pixelFormat = texOP.pixelFormat ? texOP.pixelFormat : GlConstants.RGBA;
 
-    if (texOP.enableMipMap && canGenerateMipmap(gl, texOP.width, texOP.height)) {
-        texOP.enableMipMap = true;
-    } else {
-        texOP.enableMipMap = false;
-    }
+//     if (texOP.enableMipMap && canGenerateMipmap(gl, texOP.width, texOP.height)) {
+//         texOP.enableMipMap = true;
+//     } else {
+//         texOP.enableMipMap = false;
+//     }
 
-    if (texOP.filterMax == null) {
-        texOP.filterMax = texOP.enableMipMap ? GlConstants.LINEAR_MIPMAP_LINEAR : GlConstants.LINEAR;
-    }
-    if (texOP.filterMin == null) {
-        texOP.filterMin = texOP.enableMipMap ? GlConstants.LINEAR_MIPMAP_LINEAR : GlConstants.LINEAR;
-    }
+//     if (texOP.filterMax == null) {
+//         texOP.filterMax = texOP.enableMipMap ? GlConstants.LINEAR_MIPMAP_LINEAR : GlConstants.LINEAR;
+//     }
+//     if (texOP.filterMin == null) {
+//         texOP.filterMin = texOP.enableMipMap ? GlConstants.LINEAR_MIPMAP_LINEAR : GlConstants.LINEAR;
+//     }
 
-    if (texOP.wrapS == null) {
-        texOP.wrapS = canWrapReapeat(gl, texOP.width, texOP.height) ? GlConstants.REPEAT : GlConstants.CLAMP_TO_EDGE;
-    }
-    if (texOP.wrapT == null) {
-        texOP.wrapT = canWrapReapeat(gl, texOP.width, texOP.height) ? GlConstants.REPEAT : GlConstants.CLAMP_TO_EDGE;
-    }
-}
+//     if (texOP.wrapS == null) {
+//         texOP.wrapS = canWrapReapeat(gl, texOP.width, texOP.height) ? GlConstants.REPEAT : GlConstants.CLAMP_TO_EDGE;
+//     }
+//     if (texOP.wrapT == null) {
+//         texOP.wrapT = canWrapReapeat(gl, texOP.width, texOP.height) ? GlConstants.REPEAT : GlConstants.CLAMP_TO_EDGE;
+//     }
+// }
 
-export function deduceTextureTypedArrayOption(
-    gl: WebGLRenderingContext,
-    data: ArrayBufferView,
-    texOP: ItexViewDataInfo,
-) {
-    dedeuceBaseTextureOption(gl, texOP);
+// export function deduceTextureTypedArrayOption(
+//     gl: WebGLRenderingContext,
+//     data: ArrayBufferView,
+//     texOP: ItexViewDataInfo,
+// ) {
+//     dedeuceBaseTextureOption(gl, texOP);
 
-    if (texOP.pixelDatatype == null) {
-        texOP.pixelDatatype = getGLTypeForTypedArray(data);
-    }
-}
+//     if (texOP.pixelDatatype == null) {
+//         texOP.pixelDatatype = getGLTypeForTypedArray(data);
+//     }
+// }
 
-export function deduceTextureimgSourceOption(
-    gl: WebGLRenderingContext,
-    data: TexImageSource,
-    texOP: ItexImageDataInfo,
-) {
-    texOP.width = data.width;
-    texOP.height = data.height;
-    dedeuceBaseTextureOption(gl, texOP);
-    if (texOP.pixelDatatype == null) {
-        texOP.pixelDatatype = GlConstants.UNSIGNED_BYTE;
-    }
-}
+// export function deduceTextureimgSourceOption(
+//     gl: WebGLRenderingContext,
+//     data: TexImageSource,
+//     texOP: ItexImageDataInfo,
+// ) {
+//     texOP.width = data.width;
+//     texOP.height = data.height;
+//     dedeuceBaseTextureOption(gl, texOP);
+//     if (texOP.pixelDatatype == null) {
+//         texOP.pixelDatatype = GlConstants.UNSIGNED_BYTE;
+//     }
+// }
 
 function isPowerOf2(value: number) {
     return (value & (value - 1)) === 0;

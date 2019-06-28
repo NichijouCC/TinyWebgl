@@ -338,7 +338,7 @@ export interface ItextureInfo {
     height?: number;
 }
 
-export interface ItexViewDataInfo extends ItextureInfo {
+export interface ItexViewDataOption extends ItextureInfo {
     // data: ArrayBufferView;
     /**
      * when data is A Uint8Array , pixelDatatype  can be gl.UNSIGNED_BYTE.
@@ -349,14 +349,14 @@ export interface ItexViewDataInfo extends ItextureInfo {
      *
      * when data is A Float32Array , pixelDatatype  can be gl.FLOAT.
      */
-    pixelDatatype: number;
+    pixelDatatype?: number;
 
     width: number;
 
     height: number;
 }
 
-export interface ItexImageDataInfo extends ItextureInfo {
+export interface ItexImageDataOption extends ItextureInfo {
     // data: HTMLImageElement | HTMLCanvasElement;
 
     pixelDatatype?: number;
