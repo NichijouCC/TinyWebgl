@@ -8,6 +8,7 @@ import {
     IprogramInfo,
     IbassProgramOption,
     IprogramState,
+    ItextureInfo,
 } from "./type";
 import { setProgramStates, setProgramStatesWithCached } from "./state";
 
@@ -273,9 +274,9 @@ export function getUniformSetter(
             };
             break;
         case gl.SAMPLER_2D:
-            return (value: WebGLTexture) => {
+            return (value:ItextureInfo) => {
                 gl.activeTexture(gl.TEXTURE0 + bindpoint);
-                gl.bindTexture(gl.TEXTURE_2D, value);
+                gl.bindTexture(gl.TEXTURE_2D, value.texture);
                 gl.uniform1i(location, bindpoint);
 
                 gl.bindpoint = gl.bindpoint + 1;

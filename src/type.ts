@@ -309,11 +309,19 @@ export interface Iobject {
     program: IprogramInfo;
 }
 
+
+
+export interface ItextureInfo
+{
+    texture:WebGLTexture;
+    texDes:ItexImageDataOption
+}
+
 // ---------------pixstore-------------------global state
 // preMultiply_alpha?: boolean;
 // flip_y?: boolean;
 
-export interface ItextureInfo {
+export interface ItextureDesInfo {
     target?: number;
 
     // ----------------texParameteri-------------
@@ -338,7 +346,7 @@ export interface ItextureInfo {
     height?: number;
 }
 
-export interface ItexViewDataOption extends ItextureInfo {
+export interface ItexViewDataOption extends ItextureDesInfo {
     // data: ArrayBufferView;
     /**
      * when data is A Uint8Array , pixelDatatype  can be gl.UNSIGNED_BYTE.
@@ -356,7 +364,7 @@ export interface ItexViewDataOption extends ItextureInfo {
     height: number;
 }
 
-export interface ItexImageDataOption extends ItextureInfo {
+export interface ItexImageDataOption extends ItextureDesInfo {
     // data: HTMLImageElement | HTMLCanvasElement;
 
     pixelDatatype?: number;
