@@ -309,12 +309,9 @@ export interface Iobject {
     program: IprogramInfo;
 }
 
-
-
-export interface ItextureInfo
-{
-    texture:WebGLTexture;
-    texDes:ItexImageDataOption
+export interface ItextureInfo {
+    texture: WebGLTexture;
+    texDes: ItexImageDataOption;
 }
 
 // ---------------pixstore-------------------global state
