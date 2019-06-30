@@ -130,6 +130,12 @@ export function drawObject(gl: WebGLRenderingContext, obj: Iobject, instanceCoun
     }
 }
 
+export function createGlBuffer(gl: WebGLRenderingContext, target: number, viewData: ArrayBufferView) {
+    let buffer = gl.createBuffer();
+    gl.bindBuffer(target, buffer);
+    gl.bufferData(target, viewData, gl.STATIC_DRAW);
+}
+
 export * from "./geometryInfo";
 export * from "./programInfo";
 export * from "./glconstant";

@@ -25,15 +25,13 @@ export function createProgramInfo(gl: WebGLRenderingContext, op: IprogramOptions
     } else {
         bassProgram = op.program;
     }
-    if(bassProgram)
-    {
+    if (bassProgram) {
         let info = new Program();
-        info.bassProgram=bassProgram;
+        info.bassProgram = bassProgram;
         info.uniforms = op.uniforms;
         info.states = op.states;
         return info;
-    }else
-    {
+    } else {
         return null;
     }
 }
@@ -274,7 +272,7 @@ export function getUniformSetter(
             };
             break;
         case gl.SAMPLER_2D:
-            return (value:ItextureInfo) => {
+            return (value: ItextureInfo) => {
                 gl.activeTexture(gl.TEXTURE0 + bindpoint);
                 gl.bindTexture(gl.TEXTURE_2D, value.texture);
                 gl.uniform1i(location, bindpoint);

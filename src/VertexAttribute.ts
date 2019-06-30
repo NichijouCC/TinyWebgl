@@ -1,4 +1,4 @@
-import { IvertexAttrib, TypedArray, TArrayInfo } from "./type";
+import { IvertexAttrib, TypedArray, TArrayInfo, IarrayInfo } from "./type";
 import { GlConstants } from "./GLConstant";
 import { getGLTypeForTypedArray, getArrayTypeForGLtype, getbytesForGLtype } from "./Helper";
 
@@ -35,7 +35,7 @@ export class VertexAtt implements IvertexAttrib {
             }
         }
 
-        let orginData = data as IvertexAttrib;
+        let orginData = data as IarrayInfo;
 
         if (orginData.componentDataType == null) {
             newData.componentDataType = newData.viewBuffer
@@ -47,8 +47,8 @@ export class VertexAtt implements IvertexAttrib {
 
         newData.componentSize = orginData.componentSize ? orginData.componentSize : guessNumComponentsFromName(attName);
         newData.normalize = orginData.normalize != null ? orginData.normalize : false;
-        newData.bytesOffset = orginData.bytesOffset ? orginData.bytesOffset : 0;
-        newData.bytesStride = orginData.bytesStride ? orginData.bytesStride : 0;
+        newData.bytesOffset = orginData.offsetInBytes ? orginData.offsetInBytes : 0;
+        newData.bytesStride = orginData.strideInBytes ? orginData.strideInBytes : 0;
         newData.drawType = orginData.drawType ? orginData.drawType : GlConstants.STATIC_DRAW;
         newData.divisor = orginData.divisor;
 
@@ -94,7 +94,7 @@ export function setAttributeBuffer(gl: WebGLRenderingContext, value: IvertexAttr
     }
 }
 
-const uvRE = /uv/;
+const uvRE = /(uv|texcoord)/;
 const colorRE = /color/;
 function guessNumComponentsFromName(name: string, length: number = null): number {
     let numComponents;

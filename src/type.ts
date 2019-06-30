@@ -36,7 +36,7 @@ export interface IcontextOptions {
  */
 export interface IarrayInfo {
     value?: number[] | ArrayBufferView;
-    length?: number;
+    count?: number;
 
     buffer?: WebGLBuffer;
     drawType?: number;
