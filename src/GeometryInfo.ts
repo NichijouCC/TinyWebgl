@@ -64,8 +64,15 @@ export function setGeometryWithAdvanced(gl: WebGLRenderingContext, geometry: Ige
 }
 
 export function setGeometry(gl: WebGLRenderingContext, geometry: IgeometryInfo, program: IprogramInfo) {
-    for (let attName in program.bassProgram.attsDic) {
-        program.bassProgram.attsDic[attName].setter(geometry.atts[attName]);
+    let programAtts=program.bassProgram.attsDic;
+    for (let attName in programAtts) {
+        if(geometry.atts[attName])
+        {
+            programAtts[attName].setter(geometry.atts[attName]);
+        }else
+        {
+            console.warn("program needed vertex attribute not contained in Geometry!!");
+        }
     }
     if (geometry.indices) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, geometry.indices.glBuffer);
