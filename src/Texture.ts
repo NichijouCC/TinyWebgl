@@ -1,5 +1,4 @@
 import { GlConstants } from "./GLConstant";
-import { getGLTypeForTypedArray } from "./Helper";
 import { ItexViewDataOption, ItexImageDataOption, ItextureInfo } from "./type";
 
 export function createTextureFromTypedArray(
@@ -8,35 +7,29 @@ export function createTextureFromTypedArray(
     texOP: ItexViewDataOption,
 ): ItextureInfo {
     // deduceTextureTypedArrayOption(gl, data, texOP);
-
-    let target = (texOP && texOP.target) || gl.TEXTURE_2D;
-    let pixelFormat = (texOP && texOP.pixelFormat) || gl.RGBA;
-    let pixelDatatype = (texOP && texOP.pixelDatatype) || gl.UNSIGNED_BYTE;
-    let filterMax = (texOP && texOP.filterMax) || gl.LINEAR;
-    let filterMin = (texOP && texOP.filterMin) || gl.LINEAR;
-    let wrapS = (texOP && texOP.wrapS) || gl.CLAMP_TO_EDGE;
-    let wrapT = (texOP && texOP.wrapT) || gl.CLAMP_TO_EDGE;
-
     let tex = gl.createTexture();
-    gl.bindTexture(target, tex);
-    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, filterMax);
-    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, filterMin);
-    gl.texParameteri(target, gl.TEXTURE_WRAP_S, wrapS);
-    gl.texParameteri(target, gl.TEXTURE_WRAP_T, wrapT);
+    let texDes = checkTextureOption(gl, texOP);
 
-    gl.texImage2D(target, 0, pixelFormat, texOP.width, texOP.height, 0, pixelFormat, pixelDatatype, data);
+    gl.bindTexture(texDes.target, tex);
+    gl.texParameteri(texDes.target, gl.TEXTURE_MAG_FILTER, texDes.filterMax);
+    gl.texParameteri(texDes.target, gl.TEXTURE_MIN_FILTER, texDes.filterMin);
+    gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
+    gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
+
+    gl.texImage2D(
+        texDes.target,
+        0,
+        texDes.pixelFormat,
+        texOP.width,
+        texOP.height,
+        0,
+        texDes.pixelFormat,
+        texDes.pixelDatatype,
+        data,
+    );
     return {
         texture: tex,
-        texDes: {
-            ...texOP,
-            target: target,
-            pixelFormat: pixelFormat,
-            pixelDatatype: pixelDatatype,
-            filterMin: filterMin,
-            filterMax: filterMax,
-            wrapS: wrapS,
-            wrapT: wrapT,
-        },
+        texDes: texDes,
     };
 }
 
@@ -46,36 +39,22 @@ export function createTextureFromImageSource(
     texOP?: ItexImageDataOption,
 ): ItextureInfo {
     let tex = gl.createTexture();
+    texOP.width = data.width;
+    texOP.height = data.height;
 
-    let target = (texOP && texOP.target) || gl.TEXTURE_2D;
-    let pixelFormat = (texOP && texOP.pixelFormat) || gl.RGBA;
-    let pixelDatatype = (texOP && texOP.pixelDatatype) || gl.UNSIGNED_BYTE;
+    let texDes = checkTextureOption(gl, texOP);
 
-    let filterMax = (texOP && texOP.filterMax) || gl.LINEAR;
-    let filterMin = (texOP && texOP.filterMin) || gl.LINEAR;
-    let wrapS = (texOP && texOP.wrapS) || gl.CLAMP_TO_EDGE;
-    let wrapT = (texOP && texOP.wrapT) || gl.CLAMP_TO_EDGE;
+    gl.bindTexture(texDes.target, tex);
+    gl.texParameteri(texDes.target, gl.TEXTURE_MAG_FILTER, texDes.filterMax);
+    gl.texParameteri(texDes.target, gl.TEXTURE_MIN_FILTER, texDes.filterMin);
+    gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
+    gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
 
-    gl.bindTexture(target, tex);
-    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, (texOP && texOP.filterMax) || gl.LINEAR);
-    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, (texOP && texOP.filterMin) || gl.LINEAR);
-    gl.texParameteri(target, gl.TEXTURE_WRAP_S, (texOP && texOP.wrapS) || gl.CLAMP_TO_EDGE);
-    gl.texParameteri(target, gl.TEXTURE_WRAP_T, (texOP && texOP.wrapT) || gl.CLAMP_TO_EDGE);
-
-    gl.texImage2D(target, 0, pixelFormat, pixelFormat, pixelDatatype, data);
+    gl.texImage2D(texDes.target, 0, texDes.pixelFormat, texDes.pixelFormat, texDes.pixelDatatype, data);
 
     return {
         texture: tex,
-        texDes: {
-            ...texOP,
-            target: target,
-            pixelFormat: pixelFormat,
-            pixelDatatype: pixelDatatype,
-            filterMin: filterMin,
-            filterMax: filterMax,
-            wrapS: wrapS,
-            wrapT: wrapT,
-        },
+        texDes: texDes,
     };
 }
 
@@ -95,4 +74,46 @@ function canWrapReapeat(gl: WebGLRenderingContext, width: number, height: number
         return isPowerOf2(width) && isPowerOf2(height);
     }
     return true;
+}
+
+function filterFallback(gl: WebGLRenderingContext, filter: number): number {
+    if (filter === gl.NEAREST || filter === gl.NEAREST_MIPMAP_LINEAR || filter === gl.NEAREST_MIPMAP_NEAREST) {
+        return gl.NEAREST;
+    }
+    return gl.LINEAR;
+}
+
+function checkTextureOption(gl: WebGLRenderingContext, texOP: ItexImageDataOption | ItexViewDataOption) {
+    let texdes = { ...texOP };
+
+    texdes.target = (texOP && texOP.target) || gl.TEXTURE_2D;
+    texdes.pixelFormat = (texOP && texOP.pixelFormat) || gl.RGBA;
+    texdes.pixelDatatype = (texOP && texOP.pixelDatatype) || gl.UNSIGNED_BYTE;
+
+    let beCanWrapReapt = canWrapReapeat(gl, texdes.width, texdes.height);
+    let beCanGenerateMipmap = canGenerateMipmap(gl, texdes.width, texdes.height);
+    texdes.enableMipMap = beCanGenerateMipmap && texOP.enableMipMap != false;
+
+    if (beCanWrapReapt) {
+        texdes.wrapS = (texOP && texOP.wrapS) || gl.REPEAT;
+        texdes.wrapT = (texOP && texOP.wrapT) || gl.REPEAT;
+    } else {
+        texdes.wrapS = texdes.wrapT = gl.CLAMP_TO_EDGE;
+        if ((texOP && texOP.wrapS && texOP.wrapS == gl.REPEAT) || (texOP && texOP.wrapT && texOP.wrapT == gl.REPEAT)) {
+            console.warn("texture repeat need Img size be power of 2!");
+        }
+    }
+    if (texdes.enableMipMap) {
+        texdes.filterMax = (texOP && texOP.filterMax) || gl.LINEAR;
+        texdes.filterMin = (texOP && texOP.filterMin) || gl.NEAREST_MIPMAP_LINEAR;
+    } else {
+        texdes.filterMax = texOP && texOP.filterMax ? filterFallback(gl, texOP.filterMax) : gl.LINEAR;
+        texdes.filterMin = texOP && texOP.filterMin ? filterFallback(gl, texOP.filterMax) : gl.LINEAR;
+
+        if (texOP && texOP.filterMin && (texOP.filterMin != gl.NEAREST || texOP.filterMin != gl.LINEAR)) {
+            console.warn("texture mimap filter need Img size be power of 2 And enable mimap option!");
+        }
+    }
+
+    return texdes;
 }

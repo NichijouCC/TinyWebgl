@@ -1,4 +1,4 @@
-import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject, IbassProgramInfo } from "./type";
+import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject } from "./type";
 import { setGeometryWithAdvanced, setGeometryWithCached, setGeometry } from "./geometryInfo";
 import { setProgram, setProgramWithCached } from "./programInfo";
 
