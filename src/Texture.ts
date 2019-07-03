@@ -1,10 +1,7 @@
 import { GlConstants } from "./GLConstant";
 import { ItexViewDataOption, ItexImageDataOption, ItextureInfo } from "./type";
 
-export function createTextureFromTypedArray(
-    gl: WebGLRenderingContext,
-    texOP: ItexViewDataOption,
-): ItextureInfo {
+export function createTextureFromTypedArray(gl: WebGLRenderingContext, texOP: ItexViewDataOption): ItextureInfo {
     // deduceTextureTypedArrayOption(gl, data, texOP);
     let tex = gl.createTexture();
     let texDes = checkTextureOption(gl, texOP);
@@ -15,11 +12,9 @@ export function createTextureFromTypedArray(
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
 
-    if(texOP.mipmaps)
-    {
-        for(let i=0;i<texOP.mipmaps.length;i++)
-        {
-            let levelData=texOP.mipmaps[i];
+    if (texOP.mipmaps) {
+        for (let i = 0; i < texOP.mipmaps.length; i++) {
+            let levelData = texOP.mipmaps[i];
             gl.texImage2D(
                 texDes.target,
                 i,
@@ -32,8 +27,7 @@ export function createTextureFromTypedArray(
                 levelData.viewData,
             );
         }
-    }else
-    {
+    } else {
         gl.texImage2D(
             texDes.target,
             0,
@@ -45,8 +39,7 @@ export function createTextureFromTypedArray(
             texDes.pixelDatatype,
             texOP.viewData,
         );
-        if(texDes.enableMipMap)
-        {
+        if (texDes.enableMipMap) {
             gl.generateMipmap(texDes.target);
         }
     }
@@ -70,19 +63,21 @@ export function createTextureFromImageSource(gl: WebGLRenderingContext, texOP: I
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
 
-    if(texOP.mipmaps!=null)
-    {
-        for(let i=0;i<texOP.mipmaps.length;i++)
-        {
-            let levelData=texOP.mipmaps[i];
-            gl.texImage2D(texDes.target, i, texDes.pixelFormat, texDes.pixelFormat, texDes.pixelDatatype, levelData.img);
+    if (texOP.mipmaps != null) {
+        for (let i = 0; i < texOP.mipmaps.length; i++) {
+            let levelData = texOP.mipmaps[i];
+            gl.texImage2D(
+                texDes.target,
+                i,
+                texDes.pixelFormat,
+                texDes.pixelFormat,
+                texDes.pixelDatatype,
+                levelData.img,
+            );
         }
-    }else
-    {
-        
+    } else {
         gl.texImage2D(texDes.target, 0, texDes.pixelFormat, texDes.pixelFormat, texDes.pixelDatatype, texOP.img);
-        if(texDes.enableMipMap)
-        {
+        if (texDes.enableMipMap) {
             gl.generateMipmap(texDes.target);
         }
     }
@@ -126,11 +121,9 @@ function checkTextureOption(gl: WebGLRenderingContext, texOP: ItexImageDataOptio
 
     let beCanWrapReapt = canWrapReapeat(gl, texdes.width, texdes.height);
     let beCanGenerateMipmap = canGenerateMipmap(gl, texdes.width, texdes.height);
-    if(texdes.mipmaps!=null)
-    {
-        texdes.enableMipMap=true;
-    }else
-    {
+    if (texdes.mipmaps != null) {
+        texdes.enableMipMap = true;
+    } else {
         texdes.enableMipMap = texOP.enableMipMap != false && beCanGenerateMipmap;
     }
 

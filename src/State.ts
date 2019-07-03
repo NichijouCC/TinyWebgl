@@ -91,7 +91,7 @@ export function setColorMaskWithCached(
     }
 }
 
-export function setCullFaceState(gl: WebGLRenderingContext, enableCullFace: boolean, cullBack: boolean) {
+export function setCullFaceState(gl: WebGLRenderingContext, enableCullFace: boolean = true, cullBack: boolean = true) {
     if (enableCullFace) {
         gl.enable(gl.CULL_FACE);
         gl.cullFace(cullBack ? gl.BACK : gl.FRONT);
@@ -102,8 +102,8 @@ export function setCullFaceState(gl: WebGLRenderingContext, enableCullFace: bool
 
 export function setCullFaceStateWithCached(
     gl: WebGLRenderingContext,
-    enableCullFace: boolean,
-    cullBack: boolean,
+    enableCullFace: boolean = true,
+    cullBack: boolean = true,
 ) {
     if (gl._cachedEnableCullFace != enableCullFace) {
         gl._cachedEnableCullFace = enableCullFace;
@@ -255,20 +255,14 @@ export function setProgramStates(gl: WebGLRenderingContext, state: IprogramState
     //----------------depth
     setDepthState(gl, state.depthWrite, state.depthTest);
     //------------------------blend
-    setBlendState(
-        gl,
-        state.enableBlend,
-        state.blendEquation,
-        state.blendSrc,
-        state.blendDst,
-    );
+    setBlendState(gl, state.enableBlend, state.blendEquation, state.blendSrc, state.blendDst);
     //-------------------------stencil
     setStencilState(
         gl,
         state.enableStencilTest,
         state.stencilFunc,
         state.stencilRefValue,
-        state.stencilMask ,
+        state.stencilMask,
         state.stencilFail,
         state.stencilPassZfail,
         state.stencilFaileZpass,
@@ -281,13 +275,7 @@ export function setProgramStatesWithCached(gl: WebGLRenderingContext, state: Ipr
     //----------------depth
     setDepthStateWithCached(gl, state.depthWrite, state.depthTest);
     //------------------------blend
-    setBlendStateWithCached(
-        gl,
-        state.enableBlend,
-        state.blendEquation,
-        state.blendSrc,
-        state.blendDst,
-    );
+    setBlendStateWithCached(gl, state.enableBlend, state.blendEquation, state.blendSrc, state.blendDst);
     //-------------------------stencil
     setStencilStateWithCached(
         gl,
