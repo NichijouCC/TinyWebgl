@@ -91,7 +91,7 @@ export function setColorMaskWithCached(
     }
 }
 
-export function setCullFaceState(gl: WebGLRenderingContext, enableCullFace: boolean = true, cullBack: boolean = true) {
+export function setCullFaceState(gl: WebGLRenderingContext, enableCullFace: boolean, cullBack: boolean) {
     if (enableCullFace) {
         gl.enable(gl.CULL_FACE);
         gl.cullFace(cullBack ? gl.BACK : gl.FRONT);
@@ -102,8 +102,8 @@ export function setCullFaceState(gl: WebGLRenderingContext, enableCullFace: bool
 
 export function setCullFaceStateWithCached(
     gl: WebGLRenderingContext,
-    enableCullFace: boolean = true,
-    cullBack: boolean = true,
+    enableCullFace: boolean,
+    cullBack: boolean,
 ) {
     if (gl._cachedEnableCullFace != enableCullFace) {
         gl._cachedEnableCullFace = enableCullFace;
@@ -251,53 +251,53 @@ export function setStencilStateWithCached(
 
 export function setProgramStates(gl: WebGLRenderingContext, state: IprogramState) {
     //---------------------------cullface
-    setCullFaceState(gl, state.enableCullFace != false, state.cullBack != false);
+    setCullFaceState(gl, state.enableCullFace, state.cullBack);
     //----------------depth
-    setDepthState(gl, state.depthWrite != false, state.depthTest != false);
+    setDepthState(gl, state.depthWrite, state.depthTest);
     //------------------------blend
     setBlendState(
         gl,
-        state.enableBlend == true,
-        state.blendEquation || gl.FUNC_ADD,
-        state.blendSrc || gl.SRC_ALPHA,
-        state.blendDst || gl.ONE_MINUS_SRC_ALPHA,
+        state.enableBlend,
+        state.blendEquation,
+        state.blendSrc,
+        state.blendDst,
     );
     //-------------------------stencil
     setStencilState(
         gl,
-        state.enableStencilTest == true,
-        state.stencilFunc || gl.ALWAYS,
-        state.stencilRefValue || 1,
-        state.stencilMask || 0xff,
-        state.stencilFail || gl.KEEP,
-        state.stencilPassZfail || gl.REPLACE,
-        state.stencilFaileZpass || gl.KEEP,
+        state.enableStencilTest,
+        state.stencilFunc,
+        state.stencilRefValue,
+        state.stencilMask ,
+        state.stencilFail,
+        state.stencilPassZfail,
+        state.stencilFaileZpass,
     );
 }
 
 export function setProgramStatesWithCached(gl: WebGLRenderingContext, state: IprogramState) {
     //---------------------------cullface
-    setCullFaceStateWithCached(gl, state.enableCullFace != false, state.cullBack != false);
+    setCullFaceStateWithCached(gl, state.enableCullFace, state.cullBack);
     //----------------depth
-    setDepthStateWithCached(gl, state.depthWrite != false, state.depthTest != false);
+    setDepthStateWithCached(gl, state.depthWrite, state.depthTest);
     //------------------------blend
     setBlendStateWithCached(
         gl,
-        state.enableBlend == true,
-        state.blendEquation || gl.FUNC_ADD,
-        state.blendSrc || gl.SRC_ALPHA,
-        state.blendDst || gl.ONE_MINUS_SRC_ALPHA,
+        state.enableBlend,
+        state.blendEquation,
+        state.blendSrc,
+        state.blendDst,
     );
     //-------------------------stencil
     setStencilStateWithCached(
         gl,
-        state.enableStencilTest == true,
-        state.stencilFunc || gl.ALWAYS,
-        state.stencilRefValue || 1,
-        state.stencilMask || 0xff,
-        state.stencilFail || gl.KEEP,
-        state.stencilPassZfail || gl.REPLACE,
-        state.stencilFaileZpass || gl.KEEP,
+        state.enableStencilTest,
+        state.stencilFunc,
+        state.stencilRefValue,
+        state.stencilMask,
+        state.stencilFail,
+        state.stencilPassZfail,
+        state.stencilFaileZpass,
     );
 }
 
