@@ -3,7 +3,6 @@ import { ItexViewDataOption, ItexImageDataOption, ItextureInfo } from "./type";
 
 export function createTextureFromTypedArray(
     gl: WebGLRenderingContext,
-    data: ArrayBufferView,
     texOP: ItexViewDataOption,
 ): ItextureInfo {
     // deduceTextureTypedArrayOption(gl, data, texOP);
@@ -16,17 +15,38 @@ export function createTextureFromTypedArray(
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
 
-    gl.texImage2D(
-        texDes.target,
-        0,
-        texDes.pixelFormat,
-        texOP.width,
-        texOP.height,
-        0,
-        texDes.pixelFormat,
-        texDes.pixelDatatype,
-        data,
-    );
+    if(texOP.mipmaps)
+    {
+        for(let i=0;i<texOP.mipmaps.length;i++)
+        {
+            let levelData=texOP.mipmaps[i];
+            gl.texImage2D(
+                texDes.target,
+                i,
+                texDes.pixelFormat,
+                levelData.width,
+                levelData.height,
+                0,
+                texDes.pixelFormat,
+                texDes.pixelDatatype,
+                levelData.viewData,
+            );
+        }
+    }else
+    {
+        gl.texImage2D(
+            texDes.target,
+            0,
+            texDes.pixelFormat,
+            texOP.width,
+            texOP.height,
+            0,
+            texDes.pixelFormat,
+            texDes.pixelDatatype,
+            texOP.viewData,
+        );
+    }
+
     return {
         texture: tex,
         texDes: texDes,
@@ -46,8 +66,17 @@ export function createTextureFromImageSource(gl: WebGLRenderingContext, texOP: I
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
 
-    gl.texImage2D(texDes.target, 0, texDes.pixelFormat, texDes.pixelFormat, texDes.pixelDatatype, data);
-
+    if(texOP.mipmaps!=null)
+    {
+        for(let i=0;i<texOP.mipmaps.length;i++)
+        {
+            let levelData=texOP.mipmaps[i];
+            gl.texImage2D(texDes.target, i, texDes.pixelFormat, texDes.pixelFormat, texDes.pixelDatatype, levelData.img);
+        }
+    }else
+    {
+        gl.texImage2D(texDes.target, 0, texDes.pixelFormat, texDes.pixelFormat, texDes.pixelDatatype, texOP.img);
+    }
     return {
         texture: tex,
         texDes: texDes,

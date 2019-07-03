@@ -360,7 +360,7 @@ export interface ItexViewDataOption extends ItextureDesInfo {
 
     height: number;
 
-    mipmaps?: { width: number; height: number; viewData: ArrayBufferView };
+    mipmaps?: { width: number; height: number; viewData: ArrayBufferView }[];
 }
 
 export interface ItexImageDataOption extends ItextureDesInfo {
@@ -372,5 +372,5 @@ export interface ItexImageDataOption extends ItextureDesInfo {
 
     height?: number;
 
-    mipmaps?: { img: TexImageSource };
+    mipmaps?: { img: TexImageSource }[];
 }

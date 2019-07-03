@@ -61,7 +61,7 @@ export function setViewPortWithCached(gl: WebGLRenderingContext, x: number, y: n
         gl._cachedViewPortY != y ||
         gl._cachedViewPortWidth != width ||
         gl._cachedViewPortHeight != height;
-    if (!bechanged) {
+    if (bechanged) {
         gl.viewport(x, y, width, height);
         gl._cachedViewPortX = x;
         gl._cachedViewPortY = y;
