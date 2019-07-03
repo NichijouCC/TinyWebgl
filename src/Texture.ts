@@ -45,6 +45,10 @@ export function createTextureFromTypedArray(
             texDes.pixelDatatype,
             texOP.viewData,
         );
+        if(texDes.enableMipMap)
+        {
+            gl.generateMipmap(texDes.target);
+        }
     }
 
     return {
@@ -75,7 +79,12 @@ export function createTextureFromImageSource(gl: WebGLRenderingContext, texOP: I
         }
     }else
     {
+        
         gl.texImage2D(texDes.target, 0, texDes.pixelFormat, texDes.pixelFormat, texDes.pixelDatatype, texOP.img);
+        if(texDes.enableMipMap)
+        {
+            gl.generateMipmap(texDes.target);
+        }
     }
     return {
         texture: tex,
@@ -117,7 +126,13 @@ function checkTextureOption(gl: WebGLRenderingContext, texOP: ItexImageDataOptio
 
     let beCanWrapReapt = canWrapReapeat(gl, texdes.width, texdes.height);
     let beCanGenerateMipmap = canGenerateMipmap(gl, texdes.width, texdes.height);
-    texdes.enableMipMap = texOP.enableMipMap != false && beCanGenerateMipmap;
+    if(texdes.mipmaps!=null)
+    {
+        texdes.enableMipMap=true;
+    }else
+    {
+        texdes.enableMipMap = texOP.enableMipMap != false && beCanGenerateMipmap;
+    }
 
     if (beCanWrapReapt) {
         texdes.wrapS = (texOP && texOP.wrapS) || gl.REPEAT;
