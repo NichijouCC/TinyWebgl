@@ -311,7 +311,7 @@ export interface Iobject {
 
 export interface ItextureInfo {
     texture: WebGLTexture;
-    texDes: ItexImageDataOption;
+    texDes: ItextureDesInfo;
 }
 
 // ---------------pixstore-------------------global state
@@ -344,7 +344,7 @@ export interface ItextureDesInfo {
 }
 
 export interface ItexViewDataOption extends ItextureDesInfo {
-    // data: ArrayBufferView;
+    viewData: ArrayBufferView;
     /**
      * when data is A Uint8Array , pixelDatatype  can be gl.UNSIGNED_BYTE.
      *
@@ -359,14 +359,18 @@ export interface ItexViewDataOption extends ItextureDesInfo {
     width: number;
 
     height: number;
+
+    mipmaps?: { width: number; height: number; viewData: ArrayBufferView };
 }
 
 export interface ItexImageDataOption extends ItextureDesInfo {
-    // data: HTMLImageElement | HTMLCanvasElement;
+    img: TexImageSource;
 
     pixelDatatype?: number;
 
     width?: number;
 
     height?: number;
+
+    mipmaps?: { img: TexImageSource };
 }
