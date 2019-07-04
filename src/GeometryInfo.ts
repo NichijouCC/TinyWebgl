@@ -2,35 +2,42 @@ import { IvertexAttrib, IvertexIndex, IgeometryInfo, IgeometryOptions, IprogramI
 import { createIndexBufferInfo } from "./vertexIndex";
 import { createAttributeBufferInfo } from "./vertexAttribute";
 
-export class GeometryInfo implements IgeometryInfo {
-    vaoDic: { [programeId: number]: WebGLVertexArrayObject } = {};
-    constructor() {
-        this.id = GeometryInfo.nextID();
-    }
-    readonly id: number;
-    primitiveType: number;
-    atts: { [attName: string]: IvertexAttrib } = {};
-    indices?: IvertexIndex;
-    // mode: number;
-    count: number;
-    offset: number;
+// export class GeometryInfo implements IgeometryInfo {
+//     vaoDic: { [programeId: number]: WebGLVertexArrayObject } = {};
+//     constructor() {
+//         this.id = GeometryInfo.nextID();
+//     }
+//     readonly id: number;
+//     primitiveType: number;
+//     atts: { [attName: string]: IvertexAttrib } = {};
+//     indices?: IvertexIndex;
+//     // mode: number;
+//     count: number;
+//     offset: number = 0;
 
-    private static count = 0;
-    static nextID() {
-        return GeometryInfo.count++;
-    }
-}
+//     private static count = 0;
+//     static nextID() {
+//         return GeometryInfo.count++;
+//     }
+// }
 
 export function createGeometryInfo(gl: WebGLRenderingContext, op: IgeometryOptions): IgeometryInfo {
-    let info = new GeometryInfo();
-    info.primitiveType = op.primitiveType ? op.primitiveType : gl.TRIANGLES;
+    // let info = new GeometryInfo();
+    let primitiveType = op.primitiveType != null ? op.primitiveType : gl.TRIANGLES;
+    let info: IgeometryInfo = {
+        atts: {},
+        vaoDic: {},
+        offset: 0,
+        count: null,
+        primitiveType: primitiveType,
+        name: op.name,
+    };
     if (op.indices != null) {
         info.indices = createIndexBufferInfo(gl, op.indices);
         if (info.count == null) {
             info.count = info.indices.count;
         }
     }
-
     for (let attName in op.atts) {
         info.atts[attName] = createAttributeBufferInfo(gl, attName, op.atts[attName]);
         if (info.count == null) {

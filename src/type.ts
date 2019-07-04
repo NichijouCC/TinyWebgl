@@ -96,7 +96,8 @@ export interface IvertexIndex {
  * 模型信息
  */
 export interface IgeometryInfo {
-    readonly id: number;
+    name?: string;
+    // readonly id: number;
     atts: { [attName: string]: IvertexAttrib };
     indices?: IvertexIndex;
     vaoDic: { [programeId: number]: WebGLVertexArrayObject };
@@ -299,6 +300,7 @@ export interface IprogramOptions {
 }
 
 export interface IgeometryOptions {
+    name?: string;
     atts: { [keyName: string]: TArrayInfo };
     indices?: TArrayInfo;
     primitiveType?: number;
