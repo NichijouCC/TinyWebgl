@@ -55,7 +55,7 @@ export interface IviewData {
 /**
  * 顶点属性信息
  */
-export interface IvertexAttrib{
+export interface IvertexAttrib {
     name: string;
     viewBuffer?: ArrayBufferView;
     count?: number;
@@ -96,7 +96,7 @@ export interface IvertexIndex {
  * 模型信息
  */
 export interface IgeometryInfo {
-    readonly id: number;
+    name?: string;
     atts: { [attName: string]: IvertexAttrib };
     indices?: IvertexIndex;
     vaoDic: { [programeId: number]: WebGLVertexArrayObject };
@@ -299,6 +299,7 @@ export interface IprogramOptions {
 }
 
 export interface IgeometryOptions {
+    name?: string;
     atts: { [keyName: string]: IviewArr };
     indices?: IviewArr;
     primitiveType?: number;

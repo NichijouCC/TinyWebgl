@@ -78,11 +78,14 @@ export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: st
     return vertexdata;
 }
 
-export function updateAttributeBufferInfo(gl: WebGLRenderingContext,att: IvertexAttrib,value: ArrayBufferView): IvertexAttrib
-{
+export function updateAttributeBufferInfo(
+    gl: WebGLRenderingContext,
+    att: IvertexAttrib,
+    value: ArrayBufferView,
+): IvertexAttrib {
     gl.bindBuffer(gl.ARRAY_BUFFER, att.glBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, value, att.drawType);
-    att.viewBuffer=value;
+    att.viewBuffer = value;
     return att;
 }
 
