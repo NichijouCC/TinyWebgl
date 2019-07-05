@@ -1,5 +1,5 @@
-import { GlConstants } from "./GLConstant";
-import { TypedArray } from "./type";
+import { GlConstants } from "./GlConstant";
+import { TypedArray } from "./Type";
 
 /**
  * Get the GL type for a typedArray

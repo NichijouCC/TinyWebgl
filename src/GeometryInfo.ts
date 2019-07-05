@@ -1,4 +1,4 @@
-import { IvertexAttrib, IvertexIndex, IgeometryInfo, IgeometryOptions, IprogramInfo } from "./type";
+import { IvertexAttrib, IvertexIndex, IgeometryInfo, IgeometryOptions, IprogramInfo } from "./Type";
 import { createIndexBufferInfo } from "./vertexIndex";
 import { createAttributeBufferInfo } from "./vertexAttribute";
 

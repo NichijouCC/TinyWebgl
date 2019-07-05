@@ -1,5 +1,5 @@
-import { IvertexAttrib, TypedArray, TArrayInfo, IarrayInfo } from "./type";
-import { GlConstants } from "./GLConstant";
+import { IvertexAttrib, TypedArray, IviewArr, IviewData } from "./Type";
+import { GlConstants } from "./GlConstant";
 import { getGLTypeForTypedArray, getArrayTypeForGLtype, getbytesForGLtype } from "./Helper";
 
 export class VertexAtt implements IvertexAttrib {
@@ -17,7 +17,7 @@ export class VertexAtt implements IvertexAttrib {
     divisor?: number;
     drawType: number;
 
-    static fromTarrayInfo(attName: string, data: TArrayInfo): VertexAtt {
+    static fromViewArrayInfo(attName: string, data: IviewArr): VertexAtt {
         let newData = new VertexAtt();
         newData.name = attName;
 
@@ -35,7 +35,7 @@ export class VertexAtt implements IvertexAttrib {
             }
         }
 
-        let orginData = data as IarrayInfo;
+        let orginData = data as IviewData;
 
         if (orginData.componentDataType == null) {
             newData.componentDataType = newData.viewBuffer
@@ -47,8 +47,8 @@ export class VertexAtt implements IvertexAttrib {
 
         newData.componentSize = orginData.componentSize ? orginData.componentSize : guessNumComponentsFromName(attName);
         newData.normalize = orginData.normalize != null ? orginData.normalize : false;
-        newData.bytesOffset = orginData.offsetInBytes ? orginData.offsetInBytes : 0;
-        newData.bytesStride = orginData.strideInBytes ? orginData.strideInBytes : 0;
+        newData.bytesOffset = orginData.bytesOffset ? orginData.bytesOffset : 0;
+        newData.bytesStride = orginData.bytesStride ? orginData.bytesStride : 0;
         newData.drawType = orginData.drawType ? orginData.drawType : GlConstants.STATIC_DRAW;
         newData.divisor = orginData.divisor;
 
@@ -65,8 +65,8 @@ export class VertexAtt implements IvertexAttrib {
     }
 }
 
-export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: TArrayInfo): IvertexAttrib {
-    let vertexdata = VertexAtt.fromTarrayInfo(attName, data);
+export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: string, data: IviewArr): IvertexAttrib {
+    let vertexdata = VertexAtt.fromViewArrayInfo(attName, data);
 
     if (vertexdata.glBuffer == null) {
         let buffer = gl.createBuffer();
@@ -76,6 +76,14 @@ export function createAttributeBufferInfo(gl: WebGLRenderingContext, attName: st
         vertexdata.glBuffer = buffer;
     }
     return vertexdata;
+}
+
+export function updateAttributeBufferInfo(gl: WebGLRenderingContext,att: IvertexAttrib,value: ArrayBufferView): IvertexAttrib
+{
+    gl.bindBuffer(gl.ARRAY_BUFFER, att.glBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, value, att.drawType);
+    att.viewBuffer=value;
+    return att;
 }
 
 export function setAttributeBuffer(gl: WebGLRenderingContext, value: IvertexAttrib, location: number) {

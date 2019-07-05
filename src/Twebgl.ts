@@ -1,4 +1,4 @@
-import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject } from "./type";
+import { IcontextOptions, IgeometryInfo, IprogramInfo, Iobject } from "./Type";
 import { setGeometryWithAdvanced, setGeometryWithCached, setGeometry } from "./geometryInfo";
 import { setProgram, setProgramWithCached } from "./programInfo";
 
@@ -139,7 +139,7 @@ export function createGlBuffer(gl: WebGLRenderingContext, target: number, viewDa
 
 export * from "./geometryInfo";
 export * from "./programInfo";
-export * from "./glconstant";
+export * from "./GlConstant";
 export * from "./state";
 export * from "./texture";
-export * from "./helper";
+export * from "./Helper";

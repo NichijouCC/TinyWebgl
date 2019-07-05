@@ -12,7 +12,7 @@ export type TypedArray =
 /**
  * vertex attribute/index 的数据源类型
  */
-export type TArrayInfo = number[] | ArrayBufferView | IarrayInfo;
+export type IviewArr = number[] | ArrayBufferView | IviewData;
 
 /**
  * webglcontext的 可选属性
@@ -34,19 +34,19 @@ export interface IcontextOptions {
 /**
  * buffer和value 必须存在一个;
  */
-export interface IarrayInfo {
+export interface IviewData {
     value?: number[] | ArrayBufferView;
     count?: number;
 
-    buffer?: WebGLBuffer;
+    glBuffer?: WebGLBuffer;
     drawType?: number;
 
     componentSize?: number;
     componentDataType?: number;
     // size?: number;
     normalize?: boolean;
-    strideInBytes?: number;
-    offsetInBytes?: number;
+    bytesStride?: number;
+    bytesOffset?: number;
     divisor?: number;
 
     // indexCount?: number;
@@ -55,7 +55,7 @@ export interface IarrayInfo {
 /**
  * 顶点属性信息
  */
-export interface IvertexAttrib {
+export interface IvertexAttrib{
     name: string;
     viewBuffer?: ArrayBufferView;
     count?: number;
@@ -299,8 +299,8 @@ export interface IprogramOptions {
 }
 
 export interface IgeometryOptions {
-    atts: { [keyName: string]: TArrayInfo };
-    indices?: TArrayInfo;
+    atts: { [keyName: string]: IviewArr };
+    indices?: IviewArr;
     primitiveType?: number;
 }
 

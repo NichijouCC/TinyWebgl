@@ -1,5 +1,5 @@
-import { IvertexIndex, TypedArray, TArrayInfo } from "./type";
-import { GlConstants } from "./GLConstant";
+import { IvertexIndex, TypedArray, IviewArr } from "./Type";
+import { GlConstants } from "./GlConstant";
 import { getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
 export class VertexIndex implements IvertexIndex {
@@ -12,7 +12,7 @@ export class VertexIndex implements IvertexIndex {
     glBuffer: WebGLBuffer;
     drawType: number;
 
-    static fromTarrayInfo(data: TArrayInfo): VertexIndex {
+    static fromViewArrayInfo(data: IviewArr): VertexIndex {
         let newData = new VertexIndex();
         newData.name = "indices";
         if (data instanceof Array) {
@@ -54,8 +54,8 @@ export class VertexIndex implements IvertexIndex {
     }
 }
 
-export function createIndexBufferInfo(gl: WebGLRenderingContext, data: TArrayInfo): IvertexIndex {
-    let vertexdata = VertexIndex.fromTarrayInfo(data);
+export function createIndexBufferInfo(gl: WebGLRenderingContext, data: IviewArr): IvertexIndex {
+    let vertexdata = VertexIndex.fromViewArrayInfo(data);
     if (vertexdata.glBuffer == null) {
         let buffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);

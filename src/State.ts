@@ -1,6 +1,6 @@
-import { IprogramState, IgeometryInfo } from "./type";
+import { IprogramState, IgeometryInfo } from "./Type";
 
-import { GlConstants } from "./GLConstant";
+import { GlConstants } from "./GlConstant";
 
 declare global {
     interface WebGLRenderingContext {

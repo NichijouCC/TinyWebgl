@@ -1,4 +1,4 @@
-import { GlConstants } from "./GLConstant";
+import { GlConstants } from "./GlConstant";
 import {
     IbassProgramInfo,
     IvertexAttrib,
@@ -9,7 +9,7 @@ import {
     IbassProgramOption,
     IprogramState,
     ItextureInfo,
-} from "./type";
+} from "./Type";
 import { setProgramStates, setProgramStatesWithCached } from "./state";
 
 export enum ShaderTypeEnum {
