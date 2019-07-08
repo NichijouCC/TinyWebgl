@@ -51,6 +51,7 @@ export class VertexAtt implements IvertexAttrib {
         newData.bytesStride = orginData.bytesStride ? orginData.bytesStride : 0;
         newData.drawType = orginData.drawType ? orginData.drawType : GlConstants.STATIC_DRAW;
         newData.divisor = orginData.divisor;
+        newData.glBuffer = orginData.glBuffer;
 
         if (orginData.count == null) {
             let elementBytes = getbytesForGLtype(newData.componentDataType) * newData.componentSize;

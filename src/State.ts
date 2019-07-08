@@ -52,7 +52,9 @@ export function setClear(
         gl.clearStencil(0);
         cleartag |= gl.STENCIL_BUFFER_BIT;
     }
-    gl.clear(cleartag);
+    if (cleartag != 0) {
+        gl.clear(cleartag);
+    }
 }
 
 export function setViewPortWithCached(gl: WebGLRenderingContext, x: number, y: number, width: number, height: number) {

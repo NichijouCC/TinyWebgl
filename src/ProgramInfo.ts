@@ -151,7 +151,7 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
     let uniformDic: { [name: string]: IuniformInfo } = {};
     let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 
-    gl.bindpoint = 0;
+    let bindpoint = 0;
     for (let i = 0; i < numUniforms; i++) {
         let uniformInfo = gl.getActiveUniform(program, i);
         if (!uniformInfo) break;
@@ -167,7 +167,7 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
             // name = name.substr(0, name.length - 3);
         }
         if (location == null) continue;
-        let bindpoint = gl.bindpoint;
+
         let func = getUniformSetter(gl, type, beArray, location, bindpoint);
         uniformDic[name] = { name: name, location: location, type: type, setter: func };
     }
@@ -272,12 +272,11 @@ export function getUniformSetter(
             };
             break;
         case gl.SAMPLER_2D:
+            let currentBindPoint = bindpoint++;
             return (value: ItextureInfo) => {
-                gl.activeTexture(gl.TEXTURE0 + bindpoint);
+                gl.activeTexture(gl.TEXTURE0 + currentBindPoint);
                 gl.bindTexture(gl.TEXTURE_2D, value.texture);
-                gl.uniform1i(location, bindpoint);
-
-                gl.bindpoint = gl.bindpoint + 1;
+                gl.uniform1i(location, currentBindPoint);
             };
         default:
             console.error("uniformSetter not handle type:" + uniformType + " yet!");
