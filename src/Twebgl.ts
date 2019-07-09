@@ -137,11 +137,12 @@ export function createGlBuffer(gl: WebGLRenderingContext, target: number, viewDa
     return buffer;
 }
 
-export * from "./geometryInfo";
+export * from "./GeometryInfo";
 export * from "./VertexAttribute";
 export * from "./VertexIndex";
-export * from "./programInfo";
+export * from "./ProgramInfo";
+export * from "./FrameBuffer";
 export * from "./GlConstant";
-export * from "./state";
-export * from "./texture";
+export * from "./State";
+export * from "./Texture";
 export * from "./Helper";
