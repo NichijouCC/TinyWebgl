@@ -1,6 +1,6 @@
 {
   "name": "twebgl",
-  "version": "0.1.42",
+  "version": "0.1.43",
   "description": "",
   "keywords": [],
   "main": "dist/twebgl.umd.js",
