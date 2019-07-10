@@ -1,4 +1,4 @@
-import { IvertexAttrib, TypedArray, IviewArr, IviewData } from "./Type";
+import { IvertexAttrib, IviewArr, IviewData } from "./Type";
 import { GlConstants } from "./GlConstant";
 import { getGLTypeForTypedArray, getArrayTypeForGLtype, getbytesForGLtype } from "./Helper";
 
@@ -39,7 +39,7 @@ export class VertexAtt implements IvertexAttrib {
 
         if (orginData.componentDataType == null) {
             newData.componentDataType = newData.viewBuffer
-                ? getGLTypeForTypedArray(newData.viewBuffer as TypedArray)
+                ? getGLTypeForTypedArray(newData.viewBuffer)
                 : GlConstants.FLOAT;
         } else {
             newData.componentDataType = orginData.componentDataType;
@@ -55,9 +55,7 @@ export class VertexAtt implements IvertexAttrib {
 
         if (orginData.count == null) {
             let elementBytes = getbytesForGLtype(newData.componentDataType) * newData.componentSize;
-            newData.count = newData.viewBuffer
-                ? (newData.viewBuffer as TypedArray).byteLength / elementBytes
-                : undefined;
+            newData.count = newData.viewBuffer ? newData.viewBuffer.byteLength / elementBytes : undefined;
         } else {
             newData.count = orginData.count;
         }

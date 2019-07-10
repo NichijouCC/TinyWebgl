@@ -1,9 +1,12 @@
 import { IprogramState, IgeometryInfo } from "./Type";
 
 import { GlConstants } from "./GlConstant";
+import { IfboInfo } from "./FrameBuffer";
 
 declare global {
     interface WebGLRenderingContext {
+        _cachedFrameBuffer: IfboInfo;
+
         _cachedGeometry: IgeometryInfo;
         _cachedProgram: WebGLProgram;
         _cachedEnableCullFace: boolean;
@@ -71,7 +74,9 @@ export function setViewPortWithCached(gl: WebGLRenderingContext, x: number, y: n
         gl._cachedViewPortHeight = height;
     }
 }
-
+export function setViewPort(gl: WebGLRenderingContext, x: number, y: number, width: number, height: number) {
+    gl.viewport(x, y, width, height);
+}
 export function setColorMaskWithCached(
     gl: WebGLRenderingContext,
     maskR: boolean,

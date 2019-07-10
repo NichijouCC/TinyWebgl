@@ -33,7 +33,7 @@ export class VertexIndex implements IvertexIndex {
 
         if (orginData.componentDataType == null) {
             newData.componentDataType = newData.viewBuffer
-                ? getGLTypeForTypedArray(newData.viewBuffer as TypedArray)
+                ? getGLTypeForTypedArray(newData.viewBuffer)
                 : GlConstants.UNSIGNED_SHORT;
         } else {
             newData.componentDataType = orginData.componentDataType;

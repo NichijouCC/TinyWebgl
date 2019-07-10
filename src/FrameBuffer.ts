@@ -1,9 +1,18 @@
 import { createTextureFromTypedArray } from "./Texture";
+import { setViewPortWithCached } from "./state";
+import { ItextureInfo } from "./Type";
 
 export interface IfboOption {
     width?: number;
     height?: number;
-    attachments?: IfboAttachment[];
+    /**
+     * default =true
+     */
+    enableDepth?: boolean;
+    /**
+     * default =true
+     */
+    enableStencil?: boolean;
 }
 
 type IfboAttachment = ItexAttachment | IrenderBufferAttachment;
@@ -72,74 +81,77 @@ function isRenderbufferFormat(format: number) {
 
 export interface IfboInfo {
     framebuffer: WebGLFramebuffer;
-    attachments: any[];
+    // attachments: any[];
     width: number;
     height: number;
+
+    depthStencil?: WebGLRenderbuffer;
+    depth?: WebGLRenderbuffer;
+    textureInfo: ItextureInfo;
 }
 /**
  * [WebGL1 only guarantees 3 combinations of attachments work](https://www.khronos.org/registry/webgl/specs/latest/1.0/#6.6).
+ * https://webglfundamentals.org/webgl/lessons/webgl-render-to-texture.html
+ *
  *
  * @param gl
  * @param op
  */
 export function createFboInfo(gl: WebGLRenderingContext, op: IfboOption): IfboInfo {
     let fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     let width = op.width || gl.drawingBufferWidth;
     let height = op.height || gl.drawingBufferHeight;
-    let colorAttachmentCount = 0;
 
+    let texinfo = createTextureFromTypedArray(gl, {
+        width: width,
+        height: height,
+        viewData: null,
+        pixelFormat: gl.RGBA,
+        wrapS: gl.CLAMP_TO_EDGE,
+        wrapT: gl.CLAMP_TO_EDGE,
+        filterMin: gl.LINEAR,
+        filterMax: gl.LINEAR,
+    });
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texinfo.texture, 0);
     let fboInfo: IfboInfo = {
         framebuffer: fbo,
         width: width,
         height: height,
-        attachments: [],
+        textureInfo: texinfo,
     };
-    op.attachments.forEach(item => {
-        //------------------attachment color/depth/stencil
-        let attachmentPoint = getAttachmentPointByFormat(item.format);
-        if (!attachmentPoint) {
-            attachmentPoint = COLOR_ATTACHMENT0 + colorAttachmentCount++;
-        }
-        //------------------纹理、renderbuffer
-        let attachment = item.attachment;
-        if (!attachment) {
-            if (isRenderbufferFormat(item.format)) {
-                attachment = gl.createRenderbuffer();
-                gl.bindRenderbuffer(gl.RENDERBUFFER, item);
-                gl.renderbufferStorage(gl.RENDERBUFFER, item.format, width, height);
-                fboInfo.attachments.push({ format: item.format, target: attachment, beRenderBuffer: true });
-            } else {
-                let op = item as ItexAttachment;
-                let texinfo = createTextureFromTypedArray(gl, {
-                    width: width,
-                    height: height,
-                    viewData: null,
-                    pixelFormat: item.format || gl.RGBA,
-                    wrapS: op.wrapS || gl.CLAMP_TO_EDGE,
-                    wrapT: op.wrapT || gl.CLAMP_TO_EDGE,
-                    filterMin: op.filterMin || gl.LINEAR,
-                    filterMax: op.filterMax || gl.LINEAR,
-                });
-                attachment = texinfo.texture;
-                fboInfo.attachments.push({ ...texinfo, beRenderBuffer: false });
-            }
-        }
-        if (attachment instanceof WebGLRenderbuffer) {
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachmentPoint, gl.RENDERBUFFER, attachment);
-        } else if (attachment instanceof WebGLTexture) {
-            let op = item as ItexAttachment;
-            gl.framebufferTexture2D(
-                gl.FRAMEBUFFER,
-                attachmentPoint,
-                op.texTarget || gl.TEXTURE_2D,
-                attachment,
-                op.level || 0,
-            );
-        }
-    });
+    if (op.enableDepth && op.enableStencil) {
+        let attachment = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, attachment);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, attachment);
+    } else if (op.enableDepth) {
+        let attachment = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, attachment);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, attachment);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return fboInfo;
 }
 
+export function setFboInfoWithCached(gl: WebGLRenderingContext, fbo: IfboInfo) {
+    if (gl._cachedFrameBuffer != fbo) {
+        if (fbo == null) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        } else {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.framebuffer);
+            setViewPortWithCached(gl, 0, 0, fbo.width, fbo.height);
+        }
+        gl._cachedFrameBuffer = fbo;
+    }
+}
+
 export function setFboInfo(gl: WebGLRenderingContext, fbo: IfboInfo) {
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.framebuffer);
+    if (fbo == null) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    } else {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.framebuffer);
+        setViewPortWithCached(gl, 0, 0, fbo.width, fbo.height);
+    }
 }
