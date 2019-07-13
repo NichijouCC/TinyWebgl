@@ -5,25 +5,34 @@ import { ItextureInfo } from "./Type";
 export interface IfboOption {
     width?: number;
     height?: number;
+
+    colorTexOp?: ItexAttachment;
     /**
-     * default =true
+     * default =false
      */
-    enableDepth?: boolean;
+    activeDepthAttachment?: boolean;
+    depthFormat?: number;
+    depthTexOp?: ItexAttachment;
     /**
-     * default =true
+     * default =false
      */
-    enableStencil?: boolean;
+    activeStencilAttachment?: boolean;
+    stencilFormat?: number;
+    /*
+     * default =false
+     */
+    activeDepthStencilAttachment?: boolean;
+    depthStencilFormat?: number;
 }
 
 type IfboAttachment = ItexAttachment | IrenderBufferAttachment;
 
 export interface ItexAttachment {
-    layer?: number;
     level?: number;
     texTarget?: number;
 
-    attachment?: any;
-    format: number;
+    pixelFormat?: number;
+    pixelDatatype?: number;
     filterMax?: number;
     filterMin?: number;
     wrapS?: number;
@@ -107,11 +116,13 @@ export function createFboInfo(gl: WebGLRenderingContext, op: IfboOption): IfboIn
         width: width,
         height: height,
         viewData: null,
-        pixelFormat: gl.RGBA,
-        wrapS: gl.CLAMP_TO_EDGE,
-        wrapT: gl.CLAMP_TO_EDGE,
-        filterMin: gl.LINEAR,
-        filterMax: gl.LINEAR,
+        pixelFormat: (op.colorTexOp && op.colorTexOp.pixelFormat) || gl.RGBA,
+        pixelDatatype: (op.colorTexOp && op.colorTexOp.pixelDatatype) || gl.UNSIGNED_BYTE,
+        wrapS: (op.colorTexOp && op.colorTexOp.wrapS) || gl.CLAMP_TO_EDGE,
+        wrapT: (op.colorTexOp && op.colorTexOp.wrapT) || gl.CLAMP_TO_EDGE,
+        filterMin: (op.colorTexOp && op.colorTexOp.filterMin) || gl.NEAREST,
+        filterMax: (op.colorTexOp && op.colorTexOp.filterMax) || gl.NEAREST,
+        enableMipMap: false,
     });
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texinfo.texture, 0);
     let fboInfo: IfboInfo = {
@@ -120,16 +131,43 @@ export function createFboInfo(gl: WebGLRenderingContext, op: IfboOption): IfboIn
         height: height,
         textureInfo: texinfo,
     };
-    if (op.enableDepth && op.enableStencil) {
+    if (op.activeDepthStencilAttachment) {
         let attachment = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, attachment);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, attachment);
-    } else if (op.enableDepth) {
-        let attachment = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, attachment);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, attachment);
+    } else {
+        if (op.activeDepthAttachment) {
+            let format = op.depthFormat || DEPTH_COMPONENT16;
+            if (isRenderbufferFormat(format)) {
+                let attachment = gl.createRenderbuffer();
+                gl.bindRenderbuffer(gl.RENDERBUFFER, attachment);
+                gl.renderbufferStorage(gl.RENDERBUFFER, format, width, height);
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, attachment);
+            } else {
+                let dpethTexinfo = createTextureFromTypedArray(gl, {
+                    width: width,
+                    height: height,
+                    viewData: null,
+                    pixelFormat: (op.colorTexOp && op.colorTexOp.pixelFormat) || DEPTH_COMPONENT,
+                    pixelDatatype: (op.colorTexOp && op.colorTexOp.pixelDatatype) || gl.UNSIGNED_SHORT,
+
+                    wrapS: (op.colorTexOp && op.colorTexOp.wrapS) || gl.CLAMP_TO_EDGE,
+                    wrapT: (op.colorTexOp && op.colorTexOp.wrapT) || gl.CLAMP_TO_EDGE,
+                    filterMin: (op.colorTexOp && op.colorTexOp.filterMin) || gl.NEAREST,
+                    filterMax: (op.colorTexOp && op.colorTexOp.filterMax) || gl.NEAREST,
+                    enableMipMap: false,
+                });
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dpethTexinfo.texture, 0);
+            }
+        }
+        if (op.activeStencilAttachment) {
+            let format = op.depthFormat || STENCIL_INDEX8;
+            let attachment = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, attachment);
+            gl.renderbufferStorage(gl.RENDERBUFFER, format, width, height);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, attachment);
+        }
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return fboInfo;
