@@ -1,4 +1,3 @@
-import { GlConstants } from "./GlConstant";
 import {
     IbassProgramInfo,
     IvertexAttrib,
@@ -174,8 +173,11 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
     return uniformDic;
 }
 
+const FRAGMENT_SHADER = 0x8b30;
+const VERTEX_SHADER = 0x8b31;
+
 export function createShader(gl: WebGLRenderingContext, type: ShaderTypeEnum, source: string, name: string = null) {
-    let target = type == ShaderTypeEnum.VS ? GlConstants.VERTEX_SHADER : GlConstants.FRAGMENT_SHADER;
+    let target = type == ShaderTypeEnum.VS ? VERTEX_SHADER : FRAGMENT_SHADER;
     let item = gl.createShader(target);
 
     gl.shaderSource(item, source);

@@ -38,7 +38,8 @@ WebGLRenderingContext.prototype.addExtension = function(extname: string): boolea
                 this.drawArraysInstanced = ext.drawArraysInstancedANGLE.bind(ext);
                 this.beActiveInstance = true;
                 return true;
-
+            case "WEBGL_depth_texture":
+                return true;
             default:
                 console.warn("Not handle in addExtension, type: " + extname);
                 return false;
@@ -142,7 +143,7 @@ export * from "./VertexAttribute";
 export * from "./VertexIndex";
 export * from "./ProgramInfo";
 export * from "./FrameBuffer";
-export * from "./GlConstant";
+// export * from "./GlConstant";
 export * from "./State";
 export * from "./Texture";
 export * from "./Helper";

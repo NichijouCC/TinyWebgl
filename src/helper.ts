@@ -1,5 +1,3 @@
-import { GlConstants } from "./GlConstant";
-
 /* DataType */
 const BYTE = 0x1400;
 const UNSIGNED_BYTE = 0x1401;
@@ -44,28 +42,28 @@ const glTypeToTypedArray: { [gltype: number]: any } = {};
  */
 export function getGLTypeForTypedArray(typedArray: ArrayBufferView): number {
     if (typedArray instanceof Int8Array) {
-        return GlConstants.BYTE;
+        return BYTE;
     }
     if (typedArray instanceof Uint8Array) {
-        return GlConstants.UNSIGNED_BYTE;
+        return UNSIGNED_BYTE;
     }
     if (typedArray instanceof Uint8ClampedArray) {
-        return GlConstants.UNSIGNED_BYTE;
+        return UNSIGNED_BYTE;
     }
     if (typedArray instanceof Int16Array) {
-        return GlConstants.SHORT;
+        return SHORT;
     }
     if (typedArray instanceof Uint16Array) {
-        return GlConstants.UNSIGNED_SHORT;
+        return UNSIGNED_SHORT;
     }
     if (typedArray instanceof Int32Array) {
-        return GlConstants.INT;
+        return INT;
     }
     if (typedArray instanceof Uint32Array) {
-        return GlConstants.UNSIGNED_INT;
+        return UNSIGNED_INT;
     }
     if (typedArray instanceof Float32Array) {
-        return GlConstants.FLOAT;
+        return FLOAT;
     }
     throw "unsupported typed array to gl type";
 }

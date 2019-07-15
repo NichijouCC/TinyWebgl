@@ -75,7 +75,7 @@ export class DomeMatWithTex {
         let imag = new Image();
         imag.src = "./res/tes.png";
         imag.onload = () => {
-            uniforms["_MainTex"] = createTextureFromImageSource(gl, imag);
+            uniforms["_MainTex"] = createTextureFromImageSource(gl, { img: imag });
             program = createProgramInfo(gl, {
                 program: { vs: defVs, fs: defFs, name: "ssxxss" },
                 uniforms: uniforms,

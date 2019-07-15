@@ -21,7 +21,8 @@
     "outDir": "../dist",
     "typeRoots": [
       "node_modules/@types"
-    ]
+    ],
+    "resolveJsonModule": true
   },
   "include": [
     "*.ts"

@@ -1,6 +1,5 @@
 import { IprogramState, IgeometryInfo } from "./Type";
 
-import { GlConstants } from "./GlConstant";
 import { IfboInfo } from "./FrameBuffer";
 
 declare global {
@@ -166,9 +165,9 @@ export function setDepthStateWithCached(
 export function setBlendState(
     gl: WebGLRenderingContext,
     enableBlend: boolean = false,
-    blendEquation: number = GlConstants.FUNC_ADD,
-    blendSrc: number = GlConstants.ONE,
-    blendDst: number = GlConstants.ONE_MINUS_SRC_ALPHA,
+    blendEquation: number = gl.FUNC_ADD,
+    blendSrc: number = gl.ONE,
+    blendDst: number = gl.ONE_MINUS_SRC_ALPHA,
 ) {
     if (enableBlend) {
         gl.enable(gl.BLEND);
@@ -180,9 +179,9 @@ export function setBlendState(
 export function setBlendStateWithCached(
     gl: WebGLRenderingContext,
     enableBlend: boolean = false,
-    blendEquation: number = GlConstants.FUNC_ADD,
-    blendSrc: number = GlConstants.ONE,
-    blendDst: number = GlConstants.ONE_MINUS_SRC_ALPHA,
+    blendEquation: number = gl.FUNC_ADD,
+    blendSrc: number = gl.ONE,
+    blendDst: number = gl.ONE_MINUS_SRC_ALPHA,
 ) {
     if (gl._cachedEnableBlend != enableBlend) {
         gl._cachedEnableBlend = enableBlend;

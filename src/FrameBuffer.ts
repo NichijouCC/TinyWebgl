@@ -94,14 +94,15 @@ export interface IfboInfo {
     width: number;
     height: number;
 
-    depthStencil?: WebGLRenderbuffer;
-    depth?: WebGLRenderbuffer;
-    textureInfo: ItextureInfo;
+    colorTextureInfo: ItextureInfo;
+    depthTextureInfo?: ItextureInfo;
 }
 /**
  * [WebGL1 only guarantees 3 combinations of attachments work](https://www.khronos.org/registry/webgl/specs/latest/1.0/#6.6).
  * https://webglfundamentals.org/webgl/lessons/webgl-render-to-texture.html
  *
+ *  * WEBGL_depth_texture extension
+ * https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_depth_texture
  *
  * @param gl
  * @param op
@@ -129,7 +130,7 @@ export function createFboInfo(gl: WebGLRenderingContext, op: IfboOption): IfboIn
         framebuffer: fbo,
         width: width,
         height: height,
-        textureInfo: texinfo,
+        colorTextureInfo: texinfo,
     };
     if (op.activeDepthStencilAttachment) {
         let attachment = gl.createRenderbuffer();
@@ -159,6 +160,7 @@ export function createFboInfo(gl: WebGLRenderingContext, op: IfboOption): IfboIn
                     enableMipMap: false,
                 });
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, dpethTexinfo.texture, 0);
+                fboInfo.depthTextureInfo = dpethTexinfo;
             }
         }
         if (op.activeStencilAttachment) {

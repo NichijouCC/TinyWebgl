@@ -1,6 +1,8 @@
 import { IvertexAttrib, IviewArr, IviewData } from "./Type";
-import { GlConstants } from "./GlConstant";
 import { getGLTypeForTypedArray, getArrayTypeForGLtype, getbytesForGLtype } from "./Helper";
+
+const FLOAT = 0x1406;
+const STATIC_DRAW = 0x88e4;
 
 export class VertexAtt implements IvertexAttrib {
     name: string;
@@ -38,9 +40,7 @@ export class VertexAtt implements IvertexAttrib {
         let orginData = data as IviewData;
 
         if (orginData.componentDataType == null) {
-            newData.componentDataType = newData.viewBuffer
-                ? getGLTypeForTypedArray(newData.viewBuffer)
-                : GlConstants.FLOAT;
+            newData.componentDataType = newData.viewBuffer ? getGLTypeForTypedArray(newData.viewBuffer) : FLOAT;
         } else {
             newData.componentDataType = orginData.componentDataType;
         }
@@ -49,7 +49,7 @@ export class VertexAtt implements IvertexAttrib {
         newData.normalize = orginData.normalize != null ? orginData.normalize : false;
         newData.bytesOffset = orginData.bytesOffset ? orginData.bytesOffset : 0;
         newData.bytesStride = orginData.bytesStride ? orginData.bytesStride : 0;
-        newData.drawType = orginData.drawType ? orginData.drawType : GlConstants.STATIC_DRAW;
+        newData.drawType = orginData.drawType ? orginData.drawType : STATIC_DRAW;
         newData.divisor = orginData.divisor;
         newData.glBuffer = orginData.glBuffer;
 

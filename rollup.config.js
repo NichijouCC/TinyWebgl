@@ -4,9 +4,8 @@ import sourceMaps from "rollup-plugin-sourcemaps";
 import camelCase from "lodash.camelcase";
 import typescript from "rollup-plugin-typescript2";
 import json from "rollup-plugin-json";
-import copy from "rollup-plugin-copy";
 
-const pkg = require("./package.json");
+import pkg from "./package.json";
 
 const libraryName = "Twebgl";
 
@@ -18,9 +17,6 @@ export default {
     ],
     // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
     external: [],
-    watch: {
-        include: "src/**",
-    },
     plugins: [
         // Allow json resolution
         json(),
@@ -35,10 +31,5 @@ export default {
 
         // Resolve source maps to the original source
         sourceMaps(),
-        // copy({
-        //   targets: {
-        //     'dist':'examples/lib',
-        //   }
-        // })
     ],
 };

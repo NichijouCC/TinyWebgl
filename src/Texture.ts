@@ -1,4 +1,3 @@
-import { GlConstants } from "./GlConstant";
 import { ItexViewDataOption, ItexImageDataOption, ItextureInfo } from "./Type";
 
 export function createTextureFromTypedArray(gl: WebGLRenderingContext, texOP: ItexViewDataOption): ItextureInfo {

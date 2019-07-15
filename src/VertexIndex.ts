@@ -1,7 +1,8 @@
 import { IvertexIndex, TypedArray, IviewArr } from "./Type";
-import { GlConstants } from "./GlConstant";
 import { getGLTypeForTypedArray, getArrayTypeForGLtype } from "./Helper";
 
+const UNSIGNED_SHORT = 0x1403;
+const STATIC_DRAW = 0x88e4;
 export class VertexIndex implements IvertexIndex {
     name: string;
     viewBuffer?: ArrayBufferView;
@@ -34,7 +35,7 @@ export class VertexIndex implements IvertexIndex {
         if (orginData.componentDataType == null) {
             newData.componentDataType = newData.viewBuffer
                 ? getGLTypeForTypedArray(newData.viewBuffer)
-                : GlConstants.UNSIGNED_SHORT;
+                : UNSIGNED_SHORT;
         } else {
             newData.componentDataType = orginData.componentDataType;
         }
@@ -43,7 +44,7 @@ export class VertexIndex implements IvertexIndex {
         } else {
             newData.count = orginData.count;
         }
-        newData.drawType = orginData.drawType ? newData.drawType : GlConstants.STATIC_DRAW;
+        newData.drawType = orginData.drawType ? newData.drawType : STATIC_DRAW;
 
         if (newData.count == null) {
             throw new Error("can not deduce geometry Indices count.");
