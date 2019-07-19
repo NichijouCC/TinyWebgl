@@ -150,7 +150,7 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
     let uniformDic: { [name: string]: IuniformInfo } = {};
     let numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 
-    let bindpoint = 0;
+    gl.bindpoint = 0;
     for (let i = 0; i < numUniforms; i++) {
         let uniformInfo = gl.getActiveUniform(program, i);
         if (!uniformInfo) break;
@@ -163,11 +163,11 @@ export function getUniformsInfo(gl: WebGLRenderingContext, program: WebGLProgram
         // remove the array suffix.
         if (name.substr(-3) === "[0]") {
             beArray = true;
-            // name = name.substr(0, name.length - 3);
+            name = name.substr(0, name.length - 3);
         }
         if (location == null) continue;
 
-        let func = getUniformSetter(gl, type, beArray, location, bindpoint);
+        let func = getUniformSetter(gl, type, beArray, location, gl.bindpoint);
         uniformDic[name] = { name: name, location: location, type: type, setter: func };
     }
     return uniformDic;
@@ -274,7 +274,8 @@ export function getUniformSetter(
             };
             break;
         case gl.SAMPLER_2D:
-            let currentBindPoint = bindpoint++;
+            let currentBindPoint = bindpoint;
+            gl.bindpoint++;
             return (value: ItextureInfo) => {
                 gl.activeTexture(gl.TEXTURE0 + currentBindPoint);
                 gl.bindTexture(gl.TEXTURE_2D, value.texture);

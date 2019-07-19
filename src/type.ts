@@ -331,6 +331,10 @@ export interface ItextureDesInfo {
     wrapS?: number;
     wrapT?: number;
 
+    /**
+     * default=true
+     */
+    flipY?: boolean;
     // arr:Uint8Array;
     // image:ImageData;
 

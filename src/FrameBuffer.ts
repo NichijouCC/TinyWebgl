@@ -123,6 +123,7 @@ export function createFboInfo(gl: WebGLRenderingContext, op: IfboOption): IfboIn
         wrapT: (op.colorTexOp && op.colorTexOp.wrapT) || gl.CLAMP_TO_EDGE,
         filterMin: (op.colorTexOp && op.colorTexOp.filterMin) || gl.NEAREST,
         filterMax: (op.colorTexOp && op.colorTexOp.filterMax) || gl.NEAREST,
+        flipY: true,
         enableMipMap: false,
     });
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texinfo.texture, 0);
@@ -152,6 +153,7 @@ export function createFboInfo(gl: WebGLRenderingContext, op: IfboOption): IfboIn
                     viewData: null,
                     pixelFormat: (op.colorTexOp && op.colorTexOp.pixelFormat) || DEPTH_COMPONENT,
                     pixelDatatype: (op.colorTexOp && op.colorTexOp.pixelDatatype) || gl.UNSIGNED_SHORT,
+                    flipY: true,
 
                     wrapS: (op.colorTexOp && op.colorTexOp.wrapS) || gl.CLAMP_TO_EDGE,
                     wrapT: (op.colorTexOp && op.colorTexOp.wrapT) || gl.CLAMP_TO_EDGE,

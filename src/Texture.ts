@@ -11,6 +11,8 @@ export function createTextureFromTypedArray(gl: WebGLRenderingContext, texOP: It
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
 
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texDes.flipY);
+
     if (texOP.mipmaps) {
         for (let i = 0; i < texOP.mipmaps.length; i++) {
             let levelData = texOP.mipmaps[i];
@@ -61,6 +63,8 @@ export function createTextureFromImageSource(gl: WebGLRenderingContext, texOP: I
     gl.texParameteri(texDes.target, gl.TEXTURE_MIN_FILTER, texDes.filterMin);
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_S, texDes.wrapS);
     gl.texParameteri(texDes.target, gl.TEXTURE_WRAP_T, texDes.wrapT);
+
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texDes.flipY);
 
     if (texOP.mipmaps != null) {
         for (let i = 0; i < texOP.mipmaps.length; i++) {
@@ -117,6 +121,7 @@ function checkTextureOption(gl: WebGLRenderingContext, texOP: ItexImageDataOptio
     texdes.target = (texOP && texOP.target) || gl.TEXTURE_2D;
     texdes.pixelFormat = (texOP && texOP.pixelFormat) || gl.RGBA;
     texdes.pixelDatatype = (texOP && texOP.pixelDatatype) || gl.UNSIGNED_BYTE;
+    texdes.flipY = texOP && texOP.flipY != null ? texOP.flipY : true;
 
     let beCanWrapReapt = canWrapReapeat(gl, texdes.width, texdes.height);
     let beCanGenerateMipmap = canGenerateMipmap(gl, texdes.width, texdes.height);
